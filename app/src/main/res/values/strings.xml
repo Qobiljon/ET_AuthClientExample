@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">ET_AuthClientExample</string>
+    <string name="account">Account: %1$s</string>
+
+    <!--gRPC-->
+    <string name="grpc_server_ip">165.246.43.162</string>
+    <string name="grpc_server_port">50051</string>
+
+    <!--Google login-->
+    <string name="server_google_client_id">79296265957-q86codp0stg8ka489ukeplp0gem0k8na.apps.googleusercontent.com</string>
+    <string name="logout">Logout</string>
+    <string name="dummy">Dummy</string>
+</resources>

@@ -1,0 +1,145 @@
+syntax = "proto3";
+option java_package = "inha.nslab.easytrack";
+
+message DefaultRequestMessage {
+}
+
+message DefaultResponseMessage {
+    bool doneSuccessfully = 1;
+}
+
+message LoginWithGoogleIdRequestMessage {
+    string idToken = 1;
+}
+
+message LoginWithGoogleIdResponseMessage {
+    bool doneSuccessfully = 1;
+    string idToken = 2;
+    bool isParticipant = 3;
+}
+
+message LogoutWithGoogleIdRequestMessage {
+    string idToken = 1;
+}
+
+message SubmitHeartbeatRequestMessage {
+    string idToken = 1;
+    int64 timestamp = 2;
+}
+
+message SubmitDataRequestMessage {
+    int32 applicationId = 1;
+    int64 timestamp = 2;
+    int32 dataSourceId = 3;
+    string data = 4;
+}
+
+message SubmitDataResponseMessage {
+    bool doneSuccessfully = 1;
+    int64 timestamp = 2;
+}
+
+message SubmitDirectMessageRequestMessage {
+    int32 applicationId = 1;
+    string idToken = 2;
+    string targetEmailAddress = 3;
+    string subject = 4;
+    string message = 5;
+}
+
+message RetrieveParticipantsRequestMessage {
+    int32 applicationId = 1;
+    string idToken = 2;
+}
+
+message RetrieveParticipantsResponseMessage {
+    bool doneSuccessfully = 1;
+    repeated string emailAddresses = 2;
+    repeated string names = 3;
+}
+
+message RetrieveDataRequestMessage {
+    int32 applicationId = 1;
+    int64 range_from_timestamp = 2;
+    int64 range_till_timestamp = 3;
+    string idToken = 4;
+}
+
+message RetrieveDataResponseMessage {
+    bool doneSuccessfully = 1;
+    repeated string emails = 2;
+    repeated int32 dataSources = 3;
+    repeated string data = 4;
+}
+
+message RetrieveParticipantStatisticsRequestMessage {
+    int32 applicationId = 1;
+    string targetEmailAddress = 2;
+}
+
+message RetrieveParticipantStatisticsResponseMessage {
+    bool doneSuccessfully = 1;
+    repeated string emailAddresses = 2;
+    repeated int32 lastAuthenticationTimestamps = 3;
+    repeated int32 lastHeartbeatTimestamps = 4;
+    repeated int32 lastDataSubmissionTimestamps = 5;
+    repeated int32 amountsOfSubmittedData = 6;
+}
+
+message RetrieveUnreadNotificationsRequestMessage {
+    int32 applicationId = 1;
+    string idToken = 2;
+}
+
+message RetrieveUnreadNotificationsResponseMessage {
+    bool doneSuccessfully = 1;
+    repeated string subjects = 2;
+    repeated string messages = 3;
+    repeated int64 timestamps = 4;
+}
+
+message RetrieveUnreadDirectMessagesRequestMessage {
+    int32 applicationId = 1;
+    string idToken = 2;
+}
+
+message RetrieveUnreadDirectMessagesResponseMessage {
+    bool doneSuccessfully = 1;
+    repeated string sourceEmailAddresses = 2;
+    repeated string sourceNames = 3;
+    repeated string subjects = 4;
+    repeated string messages = 5;
+    repeated int64 timestamps = 6;
+}
+
+service ETService {
+    rpc loginWithGoogleId (LoginWithGoogleIdRequestMessage) returns (LoginWithGoogleIdResponseMessage) {
+    }
+    rpc logoutWithGoogleId (LogoutWithGoogleIdRequestMessage) returns (DefaultResponseMessage) {
+    }
+    rpc submitHeartbeat (SubmitHeartbeatRequestMessage) returns (DefaultResponseMessage) {
+    }
+    rpc submitData (SubmitDataRequestMessage) returns (SubmitDataResponseMessage) {
+    }
+    rpc submitDirectMessage (SubmitDirectMessageRequestMessage) returns (DefaultResponseMessage) {
+    }
+    rpc retrieveParticipants (RetrieveParticipantsRequestMessage) returns (RetrieveParticipantsResponseMessage) {
+    }
+    rpc retrieveData (RetrieveDataRequestMessage) returns (RetrieveDataResponseMessage) {
+    }
+    rpc retrieveParticipantStatistics (RetrieveParticipantStatisticsRequestMessage) returns (RetrieveParticipantStatisticsResponseMessage) {
+    }
+    rpc retrieveUnreadNotifications (RetrieveUnreadNotificationsRequestMessage) returns (RetrieveUnreadNotificationsResponseMessage) {
+    }
+    rpc retrieveUnreadDirectMessages (RetrieveUnreadDirectMessagesRequestMessage) returns (RetrieveUnreadDirectMessagesResponseMessage) {
+    }
+}
+
+/*
+gRPC HOWTO:
+Compile into python script:
+    python -m grpc_tools.protoc -I=[input directory] --python_out=[output directory] --grpc_python_out=[output directory] [file name].proto
+Compile into java source:
+    protoc --java_out=[output directory] --grpc_java_out=[output directory] [file name].proto
+etc.
+*/
