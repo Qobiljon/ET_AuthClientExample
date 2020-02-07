@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -85,6 +87,11 @@ public class GoogleAuthActivity extends AppCompatActivity {
                 Log.e(TAG, "GoogleAuthActivity.onCreate: grpc_signed_in=" + responseMessage.getDoneSuccessfully());
 
                 if (responseMessage.getDoneSuccessfully()) {
+                    SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("idToken", account.getIdToken());
+                    editor.putBoolean("isParticipant", responseMessage.getIsParticipant());
+                    editor.apply();
                     finish();
                 } else {
                     // technical issue, shouldn't happen

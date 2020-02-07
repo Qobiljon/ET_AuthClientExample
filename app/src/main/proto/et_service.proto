@@ -14,12 +14,11 @@ message LoginWithGoogleIdRequestMessage {
 
 message LoginWithGoogleIdResponseMessage {
     bool doneSuccessfully = 1;
-    string idToken = 2;
     bool isParticipant = 3;
 }
 
 message LogoutWithGoogleIdRequestMessage {
-    string idToken = 1;
+    string email = 1;
 }
 
 message SubmitHeartbeatRequestMessage {
