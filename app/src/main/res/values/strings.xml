@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">ET_AuthClientExample</string>
-    <string name="account">Account: %1$s</string>
+    <string name="account">Email: %1$s; UserId: %2$d</string>
 
     <!--gRPC-->
     <string name="grpc_server_ip">165.246.43.162</string>

@@ -11,37 +11,35 @@ message LoginWithGoogleIdRequestMessage {
 
 message LoginWithGoogleIdResponseMessage {
     bool doneSuccessfully = 1;
-    bool isParticipant = 3;
+    bool isParticipant = 2;
+    int32 userId = 3;
 }
 
 message SubmitHeartbeatRequestMessage {
-    string idToken = 1;
-    int64 timestamp = 2;
+    int32 userId = 1;
+    string email = 2;
+    int64 timestamp = 3;
 }
 
 message SubmitDataRequestMessage {
-    int32 applicationId = 1;
-    int64 timestamp = 2;
-    int32 dataSourceId = 3;
-    string data = 4;
-}
-
-message SubmitDataResponseMessage {
-    bool doneSuccessfully = 1;
-    int64 timestamp = 2;
+    int32 userId = 1;
+    string email = 2;
+    int64 timestamp = 3;
+    int32 dataSource = 4;
+    string data = 5;
 }
 
 message SubmitDirectMessageRequestMessage {
-    int32 applicationId = 1;
-    string idToken = 2;
+    int32 userId = 1;
+    string email = 2;
     string targetEmailAddress = 3;
     string subject = 4;
     string message = 5;
 }
 
 message RetrieveParticipantsRequestMessage {
-    int32 applicationId = 1;
-    string idToken = 2;
+    int32 userId = 1;
+    string email = 2;
 }
 
 message RetrieveParticipantsResponseMessage {
@@ -51,10 +49,10 @@ message RetrieveParticipantsResponseMessage {
 }
 
 message RetrieveDataRequestMessage {
-    int32 applicationId = 1;
-    int64 range_from_timestamp = 2;
-    int64 range_till_timestamp = 3;
-    string idToken = 4;
+    int32 userId = 1;
+    string email = 2;
+    int64 range_from_timestamp = 3;
+    int64 range_till_timestamp = 4;
 }
 
 message RetrieveDataResponseMessage {
@@ -65,22 +63,21 @@ message RetrieveDataResponseMessage {
 }
 
 message RetrieveParticipantStatisticsRequestMessage {
-    int32 applicationId = 1;
-    string targetEmailAddress = 2;
+    int32 userId = 1;
+    string email = 2;
+    string targetEmailAddress = 3;
 }
 
 message RetrieveParticipantStatisticsResponseMessage {
     bool doneSuccessfully = 1;
     repeated string emailAddresses = 2;
-    repeated int32 lastAuthenticationTimestamps = 3;
-    repeated int32 lastHeartbeatTimestamps = 4;
-    repeated int32 lastDataSubmissionTimestamps = 5;
-    repeated int32 amountsOfSubmittedData = 6;
+    repeated int32 lastSyncedTimestamps = 3;
+    repeated int32 amountsOfSubmittedData = 4;
 }
 
 message RetrieveUnreadNotificationsRequestMessage {
-    int32 applicationId = 1;
-    string idToken = 2;
+    int32 userId = 1;
+    string email = 2;
 }
 
 message RetrieveUnreadNotificationsResponseMessage {
@@ -91,8 +88,8 @@ message RetrieveUnreadNotificationsResponseMessage {
 }
 
 message RetrieveUnreadDirectMessagesRequestMessage {
-    int32 applicationId = 1;
-    string idToken = 2;
+    int32 userId = 1;
+    string email = 2;
 }
 
 message RetrieveUnreadDirectMessagesResponseMessage {
@@ -109,7 +106,7 @@ service ETService {
     }
     rpc submitHeartbeat (SubmitHeartbeatRequestMessage) returns (DefaultResponseMessage) {
     }
-    rpc submitData (SubmitDataRequestMessage) returns (SubmitDataResponseMessage) {
+    rpc submitData (SubmitDataRequestMessage) returns (DefaultResponseMessage) {
     }
     rpc submitDirectMessage (SubmitDirectMessageRequestMessage) returns (DefaultResponseMessage) {
     }
@@ -129,6 +126,7 @@ service ETService {
 gRPC HOWTO:
 Compile into python script:
     python -m grpc_tools.protoc -I=[input directory] --python_out=[output directory] --grpc_python_out=[output directory] [file name].proto
+    python -m grpc_tools.protoc -I=./et_protos/ --python_out=./et_grpcs/ --grpc_python_out=./et_grpcs/ et_service.proto
 Compile into java source:
     protoc --java_out=[output directory] --grpc_java_out=[output directory] [file name].proto
 etc.

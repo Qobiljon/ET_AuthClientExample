@@ -89,7 +89,8 @@ public class GoogleAuthActivity extends AppCompatActivity {
                 if (responseMessage.getDoneSuccessfully()) {
                     SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();
-                    editor.putString("idToken", account.getIdToken());
+                    editor.putInt("userId", responseMessage.getUserId());
+                    editor.putString("email", account.getEmail());
                     editor.putBoolean("isParticipant", responseMessage.getIsParticipant());
                     editor.apply();
                     finish();

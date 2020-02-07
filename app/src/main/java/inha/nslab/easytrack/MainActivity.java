@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -35,12 +37,13 @@ public class MainActivity extends AppCompatActivity {
         if (account == null) {
             // not signed in (N)
             Log.e(TAG, "MainActivity.onCreate: signed_in=N");
-            logTextView.setText(getString(R.string.account, "N/A"));
+            logTextView.setText(getString(R.string.account, "N/A", -1));
             openLoginActivity();
         } else {
             // previously signed in (Y)
             Log.e(TAG, "MainActivity.onCreate: signed_in=Y");
-            logTextView.setText(getString(R.string.account, account.getEmail()));
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            logTextView.setText(getString(R.string.account, account.getEmail(), prefs.getInt("userId", -1)));
         }
     }
 
@@ -56,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 // signed in (Y)
                 Log.e(TAG, "MainActivity.onActivityResult: signed_in=Y");
-                logTextView.setText(getString(R.string.account, account.getEmail()));
+                SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+                logTextView.setText(getString(R.string.account, account.getEmail(), prefs.getInt("userId", -1)));
             }
         }
     }
@@ -73,7 +77,13 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     Log.e(TAG, "MainActivity.logout: signed_in=N");
-                    logTextView.setText(getString(R.string.account, "N/A"));
+                    logTextView.setText(getString(R.string.account, "N/A", -1));
+
+                    SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.clear();
+                    editor.apply();
+
                     openLoginActivity();
                 }
             });
