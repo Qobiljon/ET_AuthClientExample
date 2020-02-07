@@ -1,9 +1,6 @@
 syntax = "proto3";
 option java_package = "inha.nslab.easytrack";
 
-message DefaultRequestMessage {
-}
-
 message DefaultResponseMessage {
     bool doneSuccessfully = 1;
 }
@@ -15,10 +12,6 @@ message LoginWithGoogleIdRequestMessage {
 message LoginWithGoogleIdResponseMessage {
     bool doneSuccessfully = 1;
     bool isParticipant = 3;
-}
-
-message LogoutWithGoogleIdRequestMessage {
-    string email = 1;
 }
 
 message SubmitHeartbeatRequestMessage {
@@ -113,8 +106,6 @@ message RetrieveUnreadDirectMessagesResponseMessage {
 
 service ETService {
     rpc loginWithGoogleId (LoginWithGoogleIdRequestMessage) returns (LoginWithGoogleIdResponseMessage) {
-    }
-    rpc logoutWithGoogleId (LogoutWithGoogleIdRequestMessage) returns (DefaultResponseMessage) {
     }
     rpc submitHeartbeat (SubmitHeartbeatRequestMessage) returns (DefaultResponseMessage) {
     }
