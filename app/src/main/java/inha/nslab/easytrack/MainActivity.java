@@ -21,6 +21,7 @@ import java.util.Calendar;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,19 +54,23 @@ public class MainActivity extends AppCompatActivity {
                 EtService.LoginWithGoogleIdRequestMessage requestMessage = EtService.LoginWithGoogleIdRequestMessage.newBuilder()
                         .setIdToken(idToken)
                         .build();
-                EtService.LoginWithGoogleIdResponseMessage responseMessage = stub.loginWithGoogleId(requestMessage);
-                if (responseMessage.getDoneSuccessfully())
-                    runOnUiThread(() -> logTextView.setText(getString(
-                            R.string.account,
-                            prefs.getString("email", null),
-                            prefs.getInt("userId", -1),
-                            prefs.getBoolean("isParticipant", false)
-                    )));
-                else
-                    runOnUiThread(() -> {
-                        logTextView.setText(getString(R.string.account, "N/A", -1, false));
-                        startActivityForResult(new Intent(this, GoogleAuthActivity.class), RC_OPEN_AUTH_ACTIVITY);
-                    });
+                try {
+                    EtService.LoginWithGoogleIdResponseMessage responseMessage = stub.loginWithGoogleId(requestMessage);
+                    if (responseMessage.getDoneSuccessfully())
+                        runOnUiThread(() -> logTextView.setText(getString(
+                                R.string.account,
+                                prefs.getString("email", null),
+                                prefs.getInt("userId", -1),
+                                prefs.getBoolean("isParticipant", false)
+                        )));
+                    else
+                        runOnUiThread(() -> {
+                            logTextView.setText(getString(R.string.account, "N/A", -1, false));
+                            startActivityForResult(new Intent(this, GoogleAuthActivity.class), RC_OPEN_AUTH_ACTIVITY);
+                        });
+                } catch (StatusRuntimeException e) {
+                    Log.e(TAG, "onCreate: gRPC server unavailable");
+                }
             }).start();
         }
     }
@@ -131,12 +136,15 @@ public class MainActivity extends AppCompatActivity {
                     .setValues(values)
                     .setTimestamp(timestamp)
                     .build();
-            EtService.DefaultResponseMessage responseMessage = stub.submitData(requestMessage);
-
-            if (responseMessage.getDoneSuccessfully())
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Data submitted successfully", Toast.LENGTH_SHORT).show());
-            else
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to submit data", Toast.LENGTH_SHORT).show());
+            try {
+                EtService.DefaultResponseMessage responseMessage = stub.submitData(requestMessage);
+                if (responseMessage.getDoneSuccessfully())
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Data submitted successfully", Toast.LENGTH_SHORT).show());
+                else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to submit data", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                Log.e(TAG, "submitDataClick: gRPC server unavailable");
+            }
 
             channel.shutdown();
         }).start();
@@ -158,12 +166,16 @@ public class MainActivity extends AppCompatActivity {
                     .setUserId(userId)
                     .setEmail(email)
                     .build();
-            EtService.DefaultResponseMessage responseMessage = stub.submitHeartbeat(requestMessage);
+            try {
+                EtService.DefaultResponseMessage responseMessage = stub.submitHeartbeat(requestMessage);
 
-            if (responseMessage.getDoneSuccessfully())
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Heartbeat submitted successfully", Toast.LENGTH_SHORT).show());
-            else
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to submit heartbeat", Toast.LENGTH_SHORT).show());
+                if (responseMessage.getDoneSuccessfully())
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Heartbeat submitted successfully", Toast.LENGTH_SHORT).show());
+                else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to submit heartbeat", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                Log.e(TAG, "submitHeartbeatClick: gRPC server unavailable");
+            }
 
             channel.shutdown();
         }).start();
