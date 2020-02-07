@@ -18,6 +18,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 
 import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -172,9 +174,236 @@ public class MainActivity extends AppCompatActivity {
                 if (responseMessage.getDoneSuccessfully())
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "Heartbeat submitted successfully", Toast.LENGTH_SHORT).show());
                 else
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to submit heartbeat", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to submit a heartbeat", Toast.LENGTH_SHORT).show());
             } catch (StatusRuntimeException e) {
                 Log.e(TAG, "submitHeartbeatClick: gRPC server unavailable");
+            }
+
+            channel.shutdown();
+        }).start();
+    }
+
+    public void submitDirectMessageClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.SubmitDirectMessageRequestMessage requestMessage = EtService.SubmitDirectMessageRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .setTargetEmail("nslabinha@gmail.com")
+                    .setSubject("Test title")
+                    .setContent("Test content")
+                    .build();
+            try {
+                EtService.DefaultResponseMessage responseMessage = stub.submitDirectMessage(requestMessage);
+
+                if (responseMessage.getDoneSuccessfully())
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Direct message submitted successfully", Toast.LENGTH_SHORT).show());
+                else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to submit a direct message ", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                Log.e(TAG, "submitDirectMessageClick: gRPC server unavailable");
+            }
+
+            channel.shutdown();
+        }).start();
+    }
+
+    public void retrieveParticipantsClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.RetrieveParticipantsRequestMessage requestMessage = EtService.RetrieveParticipantsRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .build();
+            try {
+                EtService.RetrieveParticipantsResponseMessage responseMessage = stub.retrieveParticipants(requestMessage);
+
+                if (responseMessage.getDoneSuccessfully()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Participants retrieved successfully", Toast.LENGTH_SHORT).show());
+                    List<String> emails = responseMessage.getEmailList();
+                    List<String> names = responseMessage.getNameList();
+                    StringBuilder sb = new StringBuilder();
+                    for (int n = 0; n < emails.size(); n++)
+                        sb.append(String.format(Locale.getDefault(), "(%s, %s) ", emails.get(n), names.get(n)));
+                    Log.e(TAG, "participants: " + sb.toString());
+                } else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to retrieve participants", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                e.printStackTrace();
+                Log.e(TAG, "retrieveParticipantsClick: gRPC server unavailable");
+            }
+
+            channel.shutdown();
+        }).start();
+    }
+
+    public void retrieveParticipantStatisticsClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.RetrieveParticipantStatisticsRequestMessage requestMessage = EtService.RetrieveParticipantStatisticsRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .setTargetEmail("nslabinha@gmail.com")
+                    .build();
+            try {
+                EtService.RetrieveParticipantStatisticsResponseMessage responseMessage = stub.retrieveParticipantStatistics(requestMessage);
+
+                if (responseMessage.getDoneSuccessfully()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Participant statistics retrieved successfully", Toast.LENGTH_SHORT).show());
+                    long lastSyncedTimestamp = responseMessage.getLastSyncedTimestamp();
+                    long lastHeartbeatTimestamp = responseMessage.getLastHeartbeatTimestamp();
+                    int amountOfSubmittedDataSamples = responseMessage.getAmountOfSubmittedDataSamples();
+                    Log.e(TAG, String.format("lastSyncedTimestamp=%d, lastHeartbeatTimestamp=%d, amountOfSubmittedDataSamples=%d", lastSyncedTimestamp, lastHeartbeatTimestamp, amountOfSubmittedDataSamples));
+                } else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to retrieve participant statistics", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                Log.e(TAG, "retrieveParticipantsClick: gRPC server unavailable");
+            }
+
+            channel.shutdown();
+        }).start();
+    }
+
+    public void retrieveDataClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.RetrieveDataRequestMessage requestMessage = EtService.RetrieveDataRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .setFromTimestamp(1581075001123L)
+                    .setTillTimestamp(-1)
+                    .setTargetEmail("nslabinha@gmail.com")
+                    .build();
+            try {
+                EtService.RetrieveDataResponseMessage responseMessage = stub.retrieveData(requestMessage);
+
+                if (responseMessage.getDoneSuccessfully()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Data successfully", Toast.LENGTH_SHORT).show());
+                    List<Long> timestampList = responseMessage.getTimestampList();
+                    List<Integer> dataSourceList = responseMessage.getDataSourceList();
+                    List<String> valueList = responseMessage.getValueList();
+                    StringBuilder sb = new StringBuilder();
+                    for (int n = 0; n < timestampList.size(); n++)
+                        sb.append(String.format(Locale.getDefault(), "(%d, %d, %s) ", timestampList.get(n), dataSourceList.get(n), valueList.get(n)));
+                    Log.e(TAG, "data: " + sb.toString());
+                } else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to retrieve data", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                e.printStackTrace();
+                Log.e(TAG, "retrieveDataClick: gRPC server unavailable");
+            }
+
+            channel.shutdown();
+        }).start();
+    }
+
+    public void retrieveUnreadDirectMessagesClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.RetrieveUnreadDirectMessagesRequestMessage requestMessage = EtService.RetrieveUnreadDirectMessagesRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .build();
+            try {
+                EtService.RetrieveUnreadDirectMessagesResponseMessage responseMessage = stub.retrieveUnreadDirectMessages(requestMessage);
+
+                if (responseMessage.getDoneSuccessfully()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Unread direct messages retrieved successfully", Toast.LENGTH_SHORT).show());
+                    List<Long> timestampList = responseMessage.getTimestampList();
+                    List<String> sourceEmailList = responseMessage.getSourceEmailList();
+                    List<String> subjectList = responseMessage.getSubjectList();
+                    List<String> contentList = responseMessage.getContentList();
+                    StringBuilder sb = new StringBuilder();
+                    for (int n = 0; n < timestampList.size(); n++)
+                        sb.append(String.format(Locale.getDefault(), "(%d, %s, %s, %s) ", timestampList.get(n), sourceEmailList.get(n), subjectList.get(n), contentList.get(n)));
+                    Log.e(TAG, "data: " + sb.toString());
+                } else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to retrieve unread direct messages", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                Log.e(TAG, "retrieveUnreadDirectMessagesClick: gRPC server unavailable");
+            }
+
+            channel.shutdown();
+        }).start();
+    }
+
+    public void retrieveUnreadNotificationsClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.RetrieveUnreadNotificationsRequestMessage requestMessage = EtService.RetrieveUnreadNotificationsRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .build();
+            try {
+                EtService.RetrieveUnreadNotificationsResponseMessage responseMessage = stub.retrieveUnreadNotifications(requestMessage);
+
+                if (responseMessage.getDoneSuccessfully()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Unread notifications retrieved successfully", Toast.LENGTH_SHORT).show());
+                    List<Long> timestampList = responseMessage.getTimestampList();
+                    List<String> subjectList = responseMessage.getSubjectList();
+                    List<String> contentList = responseMessage.getContentList();
+                    StringBuilder sb = new StringBuilder();
+                    for (int n = 0; n < timestampList.size(); n++)
+                        sb.append(String.format(Locale.getDefault(), "(%d, %s, %s) ", timestampList.get(n), subjectList.get(n), contentList.get(n)));
+                    Log.e(TAG, "data: " + sb.toString());
+                } else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to retrieve unread notifications", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                Log.e(TAG, "retrieveUnreadNotificationsClick: gRPC server unavailable");
             }
 
             channel.shutdown();

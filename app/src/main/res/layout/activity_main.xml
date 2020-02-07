@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:onClick="submitDataClick"
-        android:text="Submit data" />
+        android:text="Submit data RPC" />
 
     <Button
         android:layout_width="match_parent"
@@ -35,5 +35,47 @@
         android:gravity="center_horizontal"
         android:onClick="submitHeartbeatClick"
         android:text="Submit heartbeat" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:onClick="submitDirectMessageClick"
+        android:text="Submit direct message RPC" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:onClick="retrieveParticipantsClick"
+        android:text="Retrieve participants RPC" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:onClick="retrieveParticipantStatisticsClick"
+        android:text="Retrieve participant statistics RPC" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:onClick="retrieveDataClick"
+        android:text="Retrieve data RPC" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:onClick="retrieveUnreadDirectMessagesClick"
+        android:text="Retrieve unread direct messages RPC" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:onClick="retrieveUnreadNotificationsClick"
+        android:text="Retrieve unread notifications RPC" />
 
 </LinearLayout>
