@@ -1,6 +1,5 @@
 package inha.nslab.easytrack;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,13 +10,17 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+
+import java.util.Calendar;
+
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,17 +36,37 @@ public class MainActivity extends AppCompatActivity {
 
         logTextView = findViewById(R.id.logTextView);
 
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (account == null) {
-            // not signed in (N)
-            Log.e(TAG, "MainActivity.onCreate: signed_in=N");
-            logTextView.setText(getString(R.string.account, "N/A", -1));
-            openLoginActivity();
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+        if (prefs.getInt("userId", -1) == -1) {
+            logTextView.setText(getString(R.string.account, "N/A", -1, false));
+            startActivityForResult(new Intent(this, GoogleAuthActivity.class), RC_OPEN_AUTH_ACTIVITY);
         } else {
-            // previously signed in (Y)
-            Log.e(TAG, "MainActivity.onCreate: signed_in=Y");
-            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
-            logTextView.setText(getString(R.string.account, account.getEmail(), prefs.getInt("userId", -1)));
+            new Thread(() -> {
+                ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                        getString(R.string.grpc_server_ip),
+                        Integer.parseInt(getString(R.string.grpc_server_port))
+                ).usePlaintext().build();
+
+                String idToken = prefs.getString("idToken", null);
+
+                ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+                EtService.LoginWithGoogleIdRequestMessage requestMessage = EtService.LoginWithGoogleIdRequestMessage.newBuilder()
+                        .setIdToken(idToken)
+                        .build();
+                EtService.LoginWithGoogleIdResponseMessage responseMessage = stub.loginWithGoogleId(requestMessage);
+                if (responseMessage.getDoneSuccessfully())
+                    runOnUiThread(() -> logTextView.setText(getString(
+                            R.string.account,
+                            prefs.getString("email", null),
+                            prefs.getInt("userId", -1),
+                            prefs.getBoolean("isParticipant", false)
+                    )));
+                else
+                    runOnUiThread(() -> {
+                        logTextView.setText(getString(R.string.account, "N/A", -1, false));
+                        startActivityForResult(new Intent(this, GoogleAuthActivity.class), RC_OPEN_AUTH_ACTIVITY);
+                    });
+            }).start();
         }
     }
 
@@ -51,21 +74,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_OPEN_AUTH_ACTIVITY) {
-            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-            if (account == null) {
-                // not signed in (N)
-                Log.e(TAG, "MainActivity.onActivityResult: signed_in=N");
-                openLoginActivity();
-            } else {
-                // signed in (Y)
-                Log.e(TAG, "MainActivity.onActivityResult: signed_in=Y");
-                SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
-                logTextView.setText(getString(R.string.account, account.getEmail(), prefs.getInt("userId", -1)));
-            }
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+
+            if (prefs.getInt("userId", -1) == -1)
+                logTextView.setText(getString(R.string.account, "N/A", -1, false));
+            else
+                logTextView.setText(getString(
+                        R.string.account,
+                        prefs.getString("email", null),
+                        prefs.getInt("userId", -1),
+                        prefs.getBoolean("isParticipant", false)
+                ));
         }
     }
 
-    public void logout(View view) {
+    public void logoutClick(View view) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         if (account != null) {
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -73,25 +96,76 @@ public class MainActivity extends AppCompatActivity {
                     .requestEmail()
                     .build();
             GoogleSignInClient signInClient = GoogleSignIn.getClient(this, gso);
-            signInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    Log.e(TAG, "MainActivity.logout: signed_in=N");
-                    logTextView.setText(getString(R.string.account, "N/A", -1));
+            signInClient.signOut().addOnCompleteListener(this, task -> {
+                logTextView.setText(getString(R.string.account, "N/A", -1, false));
 
-                    SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.clear();
-                    editor.apply();
+                SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.clear();
+                editor.apply();
 
-                    openLoginActivity();
-                }
+                startActivityForResult(new Intent(this, GoogleAuthActivity.class), RC_OPEN_AUTH_ACTIVITY);
             });
         }
     }
 
-    private void openLoginActivity() {
-        Intent intent = new Intent(this, GoogleAuthActivity.class);
-        startActivityForResult(intent, RC_OPEN_AUTH_ACTIVITY);
+    public void submitDataClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+            int dataSource = 0;
+            String values = "0.0,1.0,2.0";
+            long timestamp = Calendar.getInstance().getTimeInMillis();
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.SubmitDataRequestMessage requestMessage = EtService.SubmitDataRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .setDataSource(dataSource)
+                    .setValues(values)
+                    .setTimestamp(timestamp)
+                    .build();
+            EtService.DefaultResponseMessage responseMessage = stub.submitData(requestMessage);
+
+            if (responseMessage.getDoneSuccessfully())
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Data submitted successfully", Toast.LENGTH_SHORT).show());
+            else
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to submit data", Toast.LENGTH_SHORT).show());
+
+            channel.shutdown();
+        }).start();
+    }
+
+    public void submitHeartbeatClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.SubmitHeartbeatRequestMessage requestMessage = EtService.SubmitHeartbeatRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .build();
+            EtService.DefaultResponseMessage responseMessage = stub.submitHeartbeat(requestMessage);
+
+            if (responseMessage.getDoneSuccessfully())
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Heartbeat submitted successfully", Toast.LENGTH_SHORT).show());
+            else
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to submit heartbeat", Toast.LENGTH_SHORT).show());
+
+            channel.shutdown();
+        }).start();
     }
 }

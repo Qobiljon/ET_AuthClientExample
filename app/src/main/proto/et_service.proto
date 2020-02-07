@@ -18,7 +18,6 @@ message LoginWithGoogleIdResponseMessage {
 message SubmitHeartbeatRequestMessage {
     int32 userId = 1;
     string email = 2;
-    int64 timestamp = 3;
 }
 
 message SubmitDataRequestMessage {
@@ -26,7 +25,7 @@ message SubmitDataRequestMessage {
     string email = 2;
     int64 timestamp = 3;
     int32 dataSource = 4;
-    string data = 5;
+    string values = 5;
 }
 
 message SubmitDirectMessageRequestMessage {
