@@ -112,12 +112,12 @@ message BindDataSourceResponseMessage {
     int32 dataSourceId = 2;
 }
 
-message GetAllDataSourcesRequestMessage {
+message RetrieveAllDataSourcesRequestMessage {
     int32 userId = 1;
     string email = 2;
 }
 
-message GetAllDataSourcesResponseMessage {
+message RetrieveAllDataSourcesResponseMessage {
     bool doneSuccessfully = 1;
     repeated int32 dataSourceId = 2;
     repeated string name = 3;
@@ -145,7 +145,7 @@ service ETService {
     }
     rpc bindDataSource (BindDataSourceRequestMessage) returns (BindDataSourceResponseMessage) {
     }
-    rpc getAllDataSources (GetAllDataSourcesRequestMessage) returns (GetAllDataSourcesResponseMessage) {
+    rpc retrieveAllDataSources (RetrieveAllDataSourcesRequestMessage) returns (RetrieveAllDataSourcesResponseMessage) {
     }
 }
 

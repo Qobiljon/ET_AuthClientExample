@@ -20,6 +20,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -72,6 +73,11 @@ public class MainActivity extends AppCompatActivity {
                         });
                 } catch (StatusRuntimeException e) {
                     Log.e(TAG, "onCreate: gRPC server unavailable");
+                }
+                try {
+                    channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }).start();
         }
@@ -126,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
             int userId = prefs.getInt("userId", -1);
             String email = prefs.getString("email", null);
-            int dataSource = 0;
+            int dataSource = 1;
             String values = "0.0,1.0,2.0";
             long timestamp = Calendar.getInstance().getTimeInMillis();
 
@@ -148,7 +154,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "submitDataClick: gRPC server unavailable");
             }
 
-            channel.shutdown();
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -179,7 +189,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "submitHeartbeatClick: gRPC server unavailable");
             }
 
-            channel.shutdown();
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -213,7 +227,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "submitDirectMessageClick: gRPC server unavailable");
             }
 
-            channel.shutdown();
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -251,7 +269,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "retrieveParticipantsClick: gRPC server unavailable");
             }
 
-            channel.shutdown();
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -287,7 +309,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "retrieveParticipantsClick: gRPC server unavailable");
             }
 
-            channel.shutdown();
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -329,7 +355,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "retrieveDataClick: gRPC server unavailable");
             }
 
-            channel.shutdown();
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -361,14 +391,18 @@ public class MainActivity extends AppCompatActivity {
                     StringBuilder sb = new StringBuilder();
                     for (int n = 0; n < timestampList.size(); n++)
                         sb.append(String.format(Locale.getDefault(), "(%d, %s, %s, %s) ", timestampList.get(n), sourceEmailList.get(n), subjectList.get(n), contentList.get(n)));
-                    Log.e(TAG, "data: " + sb.toString());
+                    Log.e(TAG, "unread direct messages: " + sb.toString());
                 } else
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to retrieve unread direct messages", Toast.LENGTH_SHORT).show());
             } catch (StatusRuntimeException e) {
                 Log.e(TAG, "retrieveUnreadDirectMessagesClick: gRPC server unavailable");
             }
 
-            channel.shutdown();
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -399,14 +433,99 @@ public class MainActivity extends AppCompatActivity {
                     StringBuilder sb = new StringBuilder();
                     for (int n = 0; n < timestampList.size(); n++)
                         sb.append(String.format(Locale.getDefault(), "(%d, %s, %s) ", timestampList.get(n), subjectList.get(n), contentList.get(n)));
-                    Log.e(TAG, "data: " + sb.toString());
+                    Log.e(TAG, "unread notifications: " + sb.toString());
                 } else
                     runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to retrieve unread notifications", Toast.LENGTH_SHORT).show());
             } catch (StatusRuntimeException e) {
                 Log.e(TAG, "retrieveUnreadNotificationsClick: gRPC server unavailable");
             }
 
-            channel.shutdown();
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    public void bindDataSourceClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.BindDataSourceRequestMessage requestMessage = EtService.BindDataSourceRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .setName("Test data source name")
+                    .setDescription("Test data source description")
+                    .build();
+            try {
+                EtService.BindDataSourceResponseMessage responseMessage = stub.bindDataSource(requestMessage);
+
+                if (responseMessage.getDoneSuccessfully()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Data source bound successfully", Toast.LENGTH_SHORT).show());
+                    Log.e(TAG, "bound data source id: " + responseMessage.getDataSourceId());
+                } else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to retrieve unread notifications", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                e.printStackTrace();
+                Log.e(TAG, "bindDataSourceClick: gRPC server unavailable");
+            }
+
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    public void retrieveAllDataSourcesClick(View view) {
+        new Thread(() -> {
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                    getString(R.string.grpc_server_ip),
+                    Integer.parseInt(getString(R.string.grpc_server_port))
+            ).usePlaintext().build();
+
+            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            int userId = prefs.getInt("userId", -1);
+            String email = prefs.getString("email", null);
+
+            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+            EtService.RetrieveAllDataSourcesRequestMessage requestMessage = EtService.RetrieveAllDataSourcesRequestMessage.newBuilder()
+                    .setUserId(userId)
+                    .setEmail(email)
+                    .build();
+            try {
+                EtService.RetrieveAllDataSourcesResponseMessage responseMessage = stub.retrieveAllDataSources(requestMessage);
+
+                if (responseMessage.getDoneSuccessfully()) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "All data sources retrieved successfully", Toast.LENGTH_SHORT).show());
+                    List<Integer> dataSourceIdList = responseMessage.getDataSourceIdList();
+                    List<String> nameList = responseMessage.getNameList();
+                    List<String> descriptionList = responseMessage.getDescriptionList();
+                    StringBuilder sb = new StringBuilder();
+                    for (int n = 0; n < dataSourceIdList.size(); n++)
+                        sb.append(String.format(Locale.getDefault(), "(%d, %s, %s) ", dataSourceIdList.get(n), nameList.get(n), descriptionList.get(n)));
+                    Log.e(TAG, "all data sources: " + sb.toString());
+                } else
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to retrieve all data sources", Toast.LENGTH_SHORT).show());
+            } catch (StatusRuntimeException e) {
+                Log.e(TAG, "retrieveAllDataSourcesClick: gRPC server unavailable");
+            }
+
+            try {
+                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 }

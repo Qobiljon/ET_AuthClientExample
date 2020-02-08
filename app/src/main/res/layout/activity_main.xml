@@ -78,4 +78,18 @@
         android:onClick="retrieveUnreadNotificationsClick"
         android:text="Retrieve unread notifications RPC" />
 
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:onClick="bindDataSourceClick"
+        android:text="Bind data source" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:onClick="retrieveAllDataSourcesClick"
+        android:text="Retrieve all data sources" />
+
 </LinearLayout>
