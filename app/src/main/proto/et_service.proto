@@ -100,6 +100,30 @@ message RetrieveUnreadNotificationsResponseMessage {
     repeated string content = 4;
 }
 
+message BindDataSourceRequestMessage {
+    int32 userId = 1;
+    string email = 2;
+    string name = 3;
+    string description = 4;
+}
+
+message BindDataSourceResponseMessage {
+    bool doneSuccessfully = 1;
+    int32 dataSourceId = 2;
+}
+
+message GetAllDataSourcesRequestMessage {
+    int32 userId = 1;
+    string email = 2;
+}
+
+message GetAllDataSourcesResponseMessage {
+    bool doneSuccessfully = 1;
+    repeated int32 dataSourceId = 2;
+    repeated string name = 3;
+    repeated string description = 4;
+}
+
 service ETService {
     rpc loginWithGoogleId (LoginWithGoogleIdRequestMessage) returns (LoginWithGoogleIdResponseMessage) {
     }
@@ -118,6 +142,10 @@ service ETService {
     rpc retrieveUnreadDirectMessages (RetrieveUnreadDirectMessagesRequestMessage) returns (RetrieveUnreadDirectMessagesResponseMessage) {
     }
     rpc retrieveUnreadNotifications (RetrieveUnreadNotificationsRequestMessage) returns (RetrieveUnreadNotificationsResponseMessage) {
+    }
+    rpc bindDataSource (BindDataSourceRequestMessage) returns (BindDataSourceResponseMessage) {
+    }
+    rpc getAllDataSources (GetAllDataSourcesRequestMessage) returns (GetAllDataSourcesResponseMessage) {
     }
 }
 
