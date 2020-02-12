@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ET_AuthClientExample</string>
+    <string name="app_name">EasyTrack Authenticator</string>
     <string name="account">Email: %1$s; UserId: %2$d; IsParticipant: %3$b</string>
 
     <!--gRPC-->

@@ -5,14 +5,48 @@ message DefaultResponseMessage {
     bool doneSuccessfully = 1;
 }
 
-message LoginWithGoogleIdRequestMessage {
+message LoginWithGoogleIdTokenRequestMessage {
     string idToken = 1;
 }
 
-message LoginWithGoogleIdResponseMessage {
+message DashboardLoginWithEmailRequestMessage {
+    string email = 1;
+    string name = 2;
+    string dashboardKey = 3;
+}
+
+message LoginResponseMessage {
     bool doneSuccessfully = 1;
-    bool isParticipant = 2;
-    int32 userId = 3;
+    int32 userId = 2;
+}
+
+message RegisterCampaignRequestMessage {
+    int32 userId = 1;
+    string email = 2;
+    string name = 3;
+    string notes = 4;
+    string configJson = 5;
+}
+
+message RegisterCampaignResponseMessage {
+    bool doneSuccessfully = 1;
+    int32 campaignId = 2;
+}
+
+message RetrieveCampaignsRequestMessage {
+    int32 userId = 1;
+    string email = 2;
+    bool myCampaignsOnly = 3;
+}
+
+message RetrieveCampaignsResponseMessage {
+    bool doneSuccessfully = 1;
+    repeated int32 campaignId = 2;
+    repeated string name = 3;
+    repeated string notes = 4;
+    repeated string creatorEmail = 5;
+    repeated string configJson = 6;
+    repeated int32 participantCount = 7;
 }
 
 message SubmitDataRequestMessage {
@@ -39,6 +73,7 @@ message SubmitDirectMessageRequestMessage {
 message RetrieveParticipantsRequestMessage {
     int32 userId = 1;
     string email = 2;
+    int32 campaignId = 3;
 }
 
 message RetrieveParticipantsResponseMessage {
@@ -104,7 +139,6 @@ message BindDataSourceRequestMessage {
     int32 userId = 1;
     string email = 2;
     string name = 3;
-    string description = 4;
 }
 
 message BindDataSourceResponseMessage {
@@ -125,7 +159,13 @@ message RetrieveAllDataSourcesResponseMessage {
 }
 
 service ETService {
-    rpc loginWithGoogleId (LoginWithGoogleIdRequestMessage) returns (LoginWithGoogleIdResponseMessage) {
+    rpc loginWithGoogleId (LoginWithGoogleIdTokenRequestMessage) returns (LoginResponseMessage) {
+    }
+    rpc dashboardLoginWithEmail (DashboardLoginWithEmailRequestMessage) returns (LoginResponseMessage) {
+    }
+    rpc registerCampaign (RegisterCampaignRequestMessage) returns (RegisterCampaignResponseMessage) {
+    }
+    rpc retrieveCampaigns (RetrieveCampaignsRequestMessage) returns (RetrieveCampaignsResponseMessage) {
     }
     rpc submitData (SubmitDataRequestMessage) returns (DefaultResponseMessage) {
     }

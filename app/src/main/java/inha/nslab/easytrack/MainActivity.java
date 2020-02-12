@@ -3,6 +3,7 @@ package inha.nslab.easytrack;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
 
     static final String TAG = "ET_AUTH_EXAMPLE_APP";
     static final int RC_OPEN_AUTH_ACTIVITY = 100;
-    static final int RC_SIGN_IN_WITH_GOOGLE = 101;
     private TextView logTextView;
 
     @Override
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         logTextView = findViewById(R.id.logTextView);
 
-        SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+        /*SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
         if (prefs.getInt("userId", -1) == -1) {
             logTextView.setText(getString(R.string.account, "N/A", -1, false));
             startActivityForResult(new Intent(this, GoogleAuthActivity.class), RC_OPEN_AUTH_ACTIVITY);
@@ -80,24 +80,39 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }).start();
-        }
+        }*/
+    }
+
+    public void loginClick(View view) {
+        /*Intent launchIntent = getPackageManager().getLaunchIntentForPackage("inha.nslab.easytrack");
+        if (launchIntent != null) {
+            startActivityForResult(launchIntent, RC_OPEN_AUTH_ACTIVITY);
+        }*/
+        Intent intent = new Intent(this, GoogleAuthActivity.class);
+        startActivityForResult(intent, RC_OPEN_AUTH_ACTIVITY);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_OPEN_AUTH_ACTIVITY) {
-            SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                String idToken = data.getStringExtra("idToken");
+                String fullName = data.getStringExtra("fullName");
+                String email = data.getStringExtra("email");
+                int userId = data.getIntExtra("userId", -1);
 
-            if (prefs.getInt("userId", -1) == -1)
+                SharedPreferences prefs = getSharedPreferences(getString(R.string.app_name), Context.MODE_PRIVATE);
+                if (prefs.getInt("userId", -1) == -1)
+                    logTextView.setText(getString(
+                            R.string.account,
+                            prefs.getString("email", null),
+                            prefs.getInt("userId", -1),
+                            prefs.getBoolean("isParticipant", false)
+                    ));
+            } else {
                 logTextView.setText(getString(R.string.account, "N/A", -1, false));
-            else
-                logTextView.setText(getString(
-                        R.string.account,
-                        prefs.getString("email", null),
-                        prefs.getInt("userId", -1),
-                        prefs.getBoolean("isParticipant", false)
-                ));
+            }
         }
     }
 
@@ -464,7 +479,6 @@ public class MainActivity extends AppCompatActivity {
                     .setUserId(userId)
                     .setEmail(email)
                     .setName("Test data source name")
-                    .setDescription("Test data source description")
                     .build();
             try {
                 EtService.BindDataSourceResponseMessage responseMessage = stub.bindDataSource(requestMessage);
