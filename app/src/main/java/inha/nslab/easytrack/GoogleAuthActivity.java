@@ -22,11 +22,10 @@ import java.util.concurrent.TimeUnit;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
-import static inha.nslab.easytrack.MainActivity.TAG;
-
 public class GoogleAuthActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN_WITH_GOOGLE = 101;
     private GoogleSignInClient signInClient;
+    private static String TAG = "ET_AUTH_EXAMPLE_APP";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
