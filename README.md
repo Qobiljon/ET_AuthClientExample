@@ -42,7 +42,7 @@ if (launchIntent != null) {
 protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
   super.onActivityResult(requestCode, resultCode, data);
   if (requestCode == RC_OPEN_ET_AUTH) {
-    if (result data != null) {
+    if (data != null) {
       if (resultCode == Activity.RESULT_OK) {
         String idToken = data.getStringExtra("idToken");
         String fullName = data.getStringExtra("fullName");
