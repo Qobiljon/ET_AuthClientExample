@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -74,30 +76,39 @@ public class GoogleAuthActivity extends AppCompatActivity {
                         }
 
                         if (responseMessage.getDoneSuccessfully()) {
+                            Log.e(TAG, "Passed!");
+
                             Intent result = new Intent("etAuthResult");
                             result.putExtra("idToken", account.getIdToken());
                             result.putExtra("fullName", account.getEmail());
                             result.putExtra("email", account.getEmail());
                             result.putExtra("userId", responseMessage.getUserId());
                             setResult(Activity.RESULT_OK, result);
-                            finish();
+                            runOnUiThread(GoogleAuthActivity.this::finish);
                         } else {
+                            Log.e(TAG, "Technical issue!");
                             // technical issue, shouldn't happen
                             signInClient.signOut();
                             Intent result = new Intent("etAuthResult");
                             result.putExtra("doneSuccessfully", false);
                             result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.getDoneSuccessfully(), responseMessage.getUserId()));
                             setResult(Activity.RESULT_CANCELED, result);
-                            finish();
+
+                            runOnUiThread(GoogleAuthActivity.this::finish);
                         }
                     }).start();
                 } else {
+                    Log.e(TAG, "Canceled by user!");
+
                     Log.e(TAG, "GoogleAuthActivity.onActivityResult: Google sign in canceled by the user");
                     Intent result = new Intent("etAuthResult");
                     setResult(Activity.RESULT_FIRST_USER, result);
-                    finish();
+
+                    runOnUiThread(GoogleAuthActivity.this::finish);
                 }
             } catch (ApiException e) {
+                Log.e(TAG, "Failure!");
+
                 Log.e(TAG, "GoogleAuthActivity.onActivityResult: Google sign in failure; message=" + e.getMessage());
                 e.printStackTrace();
 
@@ -105,7 +116,8 @@ public class GoogleAuthActivity extends AppCompatActivity {
                 result.putExtra("exception_message", e.getMessage());
                 result.putExtra("exception_details", e.toString());
                 setResult(Activity.RESULT_CANCELED, result);
-                finish();
+
+                runOnUiThread(GoogleAuthActivity.this::finish);
             }
         }
     }
