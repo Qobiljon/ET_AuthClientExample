@@ -44,6 +44,7 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
   if (requestCode == RC_OPEN_ET_AUTH) {
     if (data != null) {
       if (resultCode == Activity.RESULT_OK) {
+        // Successful authentication
         String idToken = data.getStringExtra("idToken");
         String fullName = data.getStringExtra("fullName");
         String email = data.getStringExtra("email");
