@@ -21,11 +21,13 @@ import java.util.concurrent.TimeUnit;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 
 public class GoogleAuthActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN_WITH_GOOGLE = 101;
-    private GoogleSignInClient signInClient;
     private static String TAG = "ET_AUTH_EXAMPLE_APP";
+    private GoogleSignInClient signInClient;
+    private SignInButton signInButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,84 +41,100 @@ public class GoogleAuthActivity extends AppCompatActivity {
                 .build();
         signInClient = GoogleSignIn.getClient(this, googleSignInOptions);
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (account != null)
-            signInClient.signOut();
-        SignInButton signInButton = findViewById(R.id.googleSignInButton);
-        signInButton.setOnClickListener(view -> startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN_WITH_GOOGLE));
-        startActivityForResult(signInClient.getSignInIntent(), RC_SIGN_IN_WITH_GOOGLE);
+
+        signInButton = findViewById(R.id.googleSignInButton);
+        signInButton.setOnClickListener(view -> startGoogleAuthenticationActivity());
+
+        if (account == null)
+            startGoogleAuthenticationActivity();
+        else {
+            signInButton.setEnabled(false);
+            signInClient.signOut().addOnCompleteListener((Void) -> {
+                signInButton.setEnabled(true);
+                startGoogleAuthenticationActivity();
+            });
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN_WITH_GOOGLE) {
+            signInButton.setEnabled(false);
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 if (account != null) {
                     new Thread(() -> {
-                        ManagedChannel channel = ManagedChannelBuilder.forAddress(
-                                getString(R.string.grpc_server_ip),
-                                Integer.parseInt(getString(R.string.grpc_server_port))
-                        ).usePlaintext().build();
-
-                        ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
-                        EtService.LoginWithGoogleIdTokenRequestMessage requestMessage = EtService.LoginWithGoogleIdTokenRequestMessage.newBuilder()
-                                .setIdToken(account.getIdToken())
-                                .build();
-                        EtService.LoginResponseMessage responseMessage = stub.loginWithGoogleId(requestMessage);
-
                         try {
-                            channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
-                        } catch (InterruptedException e) {
-                            Log.e(TAG, "GoogleAuthActivity.onActivityResult: gRPC channel shutdown() failure");
-                            e.printStackTrace();
-                        }
+                            ManagedChannel channel = ManagedChannelBuilder.forAddress(
+                                    getString(R.string.grpc_host),
+                                    Integer.parseInt(getString(R.string.grpc_port))
+                            ).usePlaintext().build();
 
-                        if (responseMessage.getDoneSuccessfully()) {
-                            Log.e(TAG, "Passed!");
+                            ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
+                            EtService.LoginWithGoogleIdTokenRequestMessage requestMessage = EtService.LoginWithGoogleIdTokenRequestMessage.newBuilder()
+                                    .setIdToken(account.getIdToken())
+                                    .build();
+                            EtService.LoginResponseMessage responseMessage = stub.loginWithGoogleId(requestMessage);
 
-                            Intent result = new Intent("etAuthResult");
-                            result.putExtra("idToken", account.getIdToken());
-                            result.putExtra("fullName", account.getEmail());
-                            result.putExtra("email", account.getEmail());
-                            result.putExtra("userId", responseMessage.getUserId());
-                            setResult(Activity.RESULT_OK, result);
-                            runOnUiThread(GoogleAuthActivity.this::finish);
-                        } else {
-                            Log.e(TAG, "Technical issue!");
-                            // technical issue, shouldn't happen
-                            signInClient.signOut();
-                            Intent result = new Intent("etAuthResult");
-                            result.putExtra("doneSuccessfully", false);
-                            result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.getDoneSuccessfully(), responseMessage.getUserId()));
-                            setResult(Activity.RESULT_CANCELED, result);
+                            try {
+                                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
 
-                            runOnUiThread(GoogleAuthActivity.this::finish);
+                            if (responseMessage.getDoneSuccessfully())
+                                runOnUiThread(() -> {
+                                    Intent result = new Intent("etAuthResult");
+                                    result.putExtra("fields", "idToken,fullName,email,userId");
+                                    result.putExtra("idToken", account.getIdToken());
+                                    result.putExtra("fullName", account.getEmail());
+                                    result.putExtra("email", account.getEmail());
+                                    result.putExtra("userId", responseMessage.getUserId());
+                                    setResult(Activity.RESULT_OK, result);
+                                    finish();
+                                });
+                            else
+                                // technical issue, shouldn't happen
+                                runOnUiThread(() -> signInClient.signOut().addOnCompleteListener((Void) -> {
+                                    Intent result = new Intent("etAuthResult");
+                                    result.putExtra("fields", "note");
+                                    result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.getDoneSuccessfully(), responseMessage.getUserId()));
+                                    setResult(Activity.RESULT_CANCELED, result);
+                                    finish();
+                                }));
+                        } catch (StatusRuntimeException e) {
+                            runOnUiThread(() -> {
+                                Intent result = new Intent("etAuthResult");
+                                result.putExtra("fields", "exception_message,exception_details");
+                                result.putExtra("exception_message", e.getMessage());
+                                result.putExtra("exception_details", e.toString());
+                                setResult(Activity.RESULT_CANCELED, result);
+                                finish();
+                            });
                         }
                     }).start();
                 } else {
-                    Log.e(TAG, "Canceled by user!");
-
-                    Log.e(TAG, "GoogleAuthActivity.onActivityResult: Google sign in canceled by the user");
                     Intent result = new Intent("etAuthResult");
+                    result.putExtra("fields", "N/A");
                     setResult(Activity.RESULT_FIRST_USER, result);
-
-                    runOnUiThread(GoogleAuthActivity.this::finish);
+                    finish();
                 }
             } catch (ApiException e) {
-                Log.e(TAG, "Failure!");
-
-                Log.e(TAG, "GoogleAuthActivity.onActivityResult: Google sign in failure; message=" + e.getMessage());
-                e.printStackTrace();
-
                 Intent result = new Intent("etAuthResult");
+                result.putExtra("fields", "exception_message,exception_details");
                 result.putExtra("exception_message", e.getMessage());
                 result.putExtra("exception_details", e.toString());
                 setResult(Activity.RESULT_CANCELED, result);
-
-                runOnUiThread(GoogleAuthActivity.this::finish);
+                finish();
             }
         }
+    }
+
+    private void startGoogleAuthenticationActivity() {
+        Intent intent = signInClient.getSignInIntent();
+        intent.setFlags(0);
+        startActivityForResult(intent, RC_SIGN_IN_WITH_GOOGLE);
     }
 }
