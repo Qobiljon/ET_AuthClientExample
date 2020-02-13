@@ -1,4 +1,4 @@
-# ET_Authenticator (ET User and Data Management using gRPC and Google ID login)
+# ET_Authenticator (ET User Management using gRPC and Google ID login)
 <h3>Step 1: Ask the user to install the "EasyTrack Authenticator" application</h3>
 
 ```java
