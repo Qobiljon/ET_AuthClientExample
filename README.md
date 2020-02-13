@@ -1,6 +1,6 @@
 # ET_Authenticator (ET User and Data Management using gRPC and Google ID login)
 <h3>Step 1: Ask the user to install the "EasyTrack Authenticator" application</h3>
-<code>
+<code style="display: block; white-space: pre-wrap;">
 @Override
 protected void onCreate(Bundle savedInstanceState) {
   super.onCreate(savedInstanceState);
@@ -25,7 +25,7 @@ private boolean authAppIsNotInstalled() {
 </code>
 
 <h3>Step 2: Launch the EasyTrack Authenticator</h3>
-<code>
+<code style="display: block; white-space: pre-wrap;">
 Intent launchIntent = getPackageManager().getLaunchIntentForPackage("inha.nslab.easytrack");
 if (launchIntent != null) {
   launchIntent.setFlags(0);
@@ -34,7 +34,7 @@ if (launchIntent != null) {
 </code>
 
 <h3>Step 3: Get the result from the EasyTrack Authenticator</h3>
-<code>
+<code style="display: block; white-space: pre-wrap;">
 @Override
 protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
   super.onActivityResult(requestCode, resultCode, data);
@@ -56,10 +56,3 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
     }
 }
 </code>
-
-<style>
-code {
-  display: block;
-  white-space: pre-wrap;
-}
-</style>
