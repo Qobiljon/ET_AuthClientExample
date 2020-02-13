@@ -1,5 +1,5 @@
 # ET_Authenticator (ET User and Data Management using gRPC and Google ID login)
-<h3>Step 1: Ask the user to install the "EasyTrack Authenticator" application<h3>
+<h3>Step 1: Ask the user to install the "EasyTrack Authenticator" application</h3>
 <code>
 @Override
 protected void onCreate(Bundle savedInstanceState) {
