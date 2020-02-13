@@ -56,3 +56,10 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
     }
 }
 </code>
+
+<style>
+code {
+  display: block;
+  white-space: pre-wrap;
+}
+</style>
