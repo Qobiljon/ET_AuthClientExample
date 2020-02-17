@@ -1,4 +1,6 @@
 # ET_Authenticator (ET User Management using gRPC and Google ID login)
+<h3>Note: Application is available via  <a href="https://play.google.com/store/apps/details?id=inha.nslab.easytrack">this link on the Google Play Store!</a></ht3>
+
 <h3>Step 1: Ask the user to install the "EasyTrack Authenticator" application</h3>
 
 ```java
