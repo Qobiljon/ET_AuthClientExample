@@ -41,7 +41,7 @@ public class GoogleAuthActivity extends AppCompatActivity {
 
         // Google login client setup
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.server_google_client_id))
+                //.requestIdToken("79296265957-68h74l6ku0vg49ika42a8bt9rcfpsaup.apps.googleusercontent.com")
                 .requestEmail()
                 .build();
         signInClient = GoogleSignIn.getClient(this, googleSignInOptions);
@@ -79,10 +79,13 @@ public class GoogleAuthActivity extends AppCompatActivity {
                     ).usePlaintext().build();
 
                     ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
-                    EtService.LoginWithGoogleIdTokenRequestMessage requestMessage = EtService.LoginWithGoogleIdTokenRequestMessage.newBuilder()
-                            .setIdToken(account.getIdToken())
+                    EtService.DashboardLoginWithEmailRequestMessage requestMessage = EtService.DashboardLoginWithEmailRequestMessage.newBuilder()
+                            // .setIdToken(account.getIdToken())
+                            .setDashboardKey("ETd@$#b0@rd")
+                            .setEmail(account.getEmail())
+                            .setName(account.getDisplayName())
                             .build();
-                    EtService.LoginResponseMessage responseMessage = stub.loginWithGoogleId(requestMessage);
+                    EtService.LoginResponseMessage responseMessage = stub.dashboardLoginWithEmail(requestMessage);
 
                     try {
                         channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
@@ -93,8 +96,9 @@ public class GoogleAuthActivity extends AppCompatActivity {
                     if (responseMessage.getDoneSuccessfully())
                         runOnUiThread(() -> {
                             Intent result = new Intent("etAuthResult");
-                            result.putExtra("fields", "idToken,fullName,email,userId");
-                            result.putExtra("idToken", account.getIdToken());
+                            result.putExtra("fields", "fullName,email,userId");
+                            //result.putExtra("fields", "idToken,fullName,email,userId");
+                            //result.putExtra("idToken", account.getIdToken());
                             result.putExtra("fullName", account.getEmail());
                             result.putExtra("email", account.getEmail());
                             result.putExtra("userId", responseMessage.getUserId());
@@ -151,10 +155,13 @@ public class GoogleAuthActivity extends AppCompatActivity {
                             ).usePlaintext().build();
 
                             ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
-                            EtService.LoginWithGoogleIdTokenRequestMessage requestMessage = EtService.LoginWithGoogleIdTokenRequestMessage.newBuilder()
-                                    .setIdToken(account.getIdToken())
+                            EtService.DashboardLoginWithEmailRequestMessage requestMessage = EtService.DashboardLoginWithEmailRequestMessage.newBuilder()
+                                    //.setIdToken(account.getIdToken())
+                                    .setDashboardKey("ETd@$#b0@rd")
+                                    .setEmail(account.getEmail())
+                                    .setName(account.getDisplayName())
                                     .build();
-                            EtService.LoginResponseMessage responseMessage = stub.loginWithGoogleId(requestMessage);
+                            EtService.LoginResponseMessage responseMessage = stub.dashboardLoginWithEmail(requestMessage);
 
                             try {
                                 channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
@@ -165,8 +172,9 @@ public class GoogleAuthActivity extends AppCompatActivity {
                             if (responseMessage.getDoneSuccessfully())
                                 runOnUiThread(() -> {
                                     Intent result = new Intent("etAuthResult");
-                                    result.putExtra("fields", "idToken,fullName,email,userId");
-                                    result.putExtra("idToken", account.getIdToken());
+                                    result.putExtra("fields", "fullName,email,userId");
+                                    //result.putExtra("fields", "idToken,fullName,email,userId");
+                                    //result.putExtra("idToken", account.getIdToken());
                                     result.putExtra("fullName", account.getEmail());
                                     result.putExtra("email", account.getEmail());
                                     result.putExtra("userId", responseMessage.getUserId());

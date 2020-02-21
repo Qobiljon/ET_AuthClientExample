@@ -6,5 +6,6 @@
     <string name="grpc_port">50051</string>
 
     <!--Google login-->
-    <string name="server_google_client_id">79296265957-q86codp0stg8ka489ukeplp0gem0k8na.apps.googleusercontent.com</string>
+<!--    <string name="server_google_client_id">79296265957-68h74l6ku0vg49ika42a8bt9rcfpsaup.apps.googleusercontent.com</string>-->
+<!--    <string name="server_google_client_secret">dXlVkYNamGd4S639E48JZjQN</string>-->
 </resources>
