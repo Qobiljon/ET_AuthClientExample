@@ -36,16 +36,21 @@ class GoogleAuthActivity : AppCompatActivity() {
             continueWithGoogleAccountButton.visibility = View.GONE
             googleSignInButton.isEnabled = false
             val account = GoogleSignIn.getLastSignedInAccount(this)
-            if (account == null) startGoogleAuthenticationActivity() else signInClient.signOut().addOnSuccessListener {
-                continueWithGoogleAccountButton.visibility = View.GONE
-                setGoogleSignInButtonText(googleSignInButton, "Sign in")
+            if (account == null)
                 startGoogleAuthenticationActivity()
-            }.addOnFailureListener {
-                val acc = GoogleSignIn.getLastSignedInAccount(this)!!
-                continueWithGoogleAccountButton.visibility = View.VISIBLE
-                googleSignInButton.isEnabled = true
-                setGoogleSignInButtonText(continueWithGoogleAccountButton, "Continue as: " + acc.email)
-                setGoogleSignInButtonText(googleSignInButton, "Sign in with different account")
+            else {
+                signInClient.signOut().addOnSuccessListener {
+                    continueWithGoogleAccountButton.visibility = View.GONE
+                    googleSignInButton.isEnabled = true;
+                    setGoogleSignInButtonText(googleSignInButton, "Sign in")
+                    startGoogleAuthenticationActivity()
+                }.addOnFailureListener {
+                    val acc = GoogleSignIn.getLastSignedInAccount(this)!!
+                    continueWithGoogleAccountButton.visibility = View.VISIBLE
+                    googleSignInButton.isEnabled = true
+                    setGoogleSignInButtonText(continueWithGoogleAccountButton, "Continue as: " + acc.email)
+                    setGoogleSignInButtonText(googleSignInButton, "Sign in with different account")
+                }
             }
         }
         continueWithGoogleAccountButton.setOnClickListener {
@@ -57,12 +62,13 @@ class GoogleAuthActivity : AppCompatActivity() {
                     val channel = ManagedChannelBuilder.forAddress(
                             getString(R.string.grpc_host), getString(R.string.grpc_port).toInt()).usePlaintext().build()
                     val stub = ETServiceGrpc.newBlockingStub(channel)
-                    val requestMessage = DashboardLoginWithEmailRequestMessage.newBuilder() // .setIdToken(account.getIdToken())
-                            .setDashboardKey("ETd@$#b0@rd")
-                            .setEmail(account.email)
-                            .setName(account.displayName)
+                    val requestMessage = LoginWithGoogleIdTokenRequestMessage.newBuilder()
+                            .setIdToken(account.getIdToken())
+                            //.setDashboardKey("ETd@$#b0@rd")
+                            //.setEmail(account.email)
+                            //.setName(account.displayName)
                             .build()
-                    val responseMessage = stub.dashboardLoginWithEmail(requestMessage)
+                    val responseMessage = stub.loginWithGoogleId(requestMessage)
                     try {
                         channel.shutdown().awaitTermination(1, TimeUnit.SECONDS)
                     } catch (e: InterruptedException) {
@@ -70,9 +76,9 @@ class GoogleAuthActivity : AppCompatActivity() {
                     }
                     if (responseMessage.doneSuccessfully) runOnUiThread {
                         val result = Intent("etAuthResult")
-                        result.putExtra("fields", "fullName,email,userId")
-                        //result.putExtra("fields", "idToken,fullName,email,userId");
-                        //result.putExtra("idToken", account.getIdToken());
+                        //result.putExtra("fields", "fullName,email,userId")
+                        result.putExtra("fields", "idToken,fullName,email,userId");
+                        result.putExtra("idToken", account.getIdToken());
                         result.putExtra("fullName", account.email)
                         result.putExtra("email", account.email)
                         result.putExtra("userId", responseMessage.userId)
@@ -108,7 +114,7 @@ class GoogleAuthActivity : AppCompatActivity() {
         } else {
             setGoogleSignInButtonText(googleSignInButton, "Sign in with different account")
             continueWithGoogleAccountButton.visibility = View.VISIBLE
-            setGoogleSignInButtonText(continueWithGoogleAccountButton, "Continue as: " + account.email)
+            setGoogleSignInButtonText(continueWithGoogleAccountButton, "Continue as: ${account.email}")
         }
     }
 
