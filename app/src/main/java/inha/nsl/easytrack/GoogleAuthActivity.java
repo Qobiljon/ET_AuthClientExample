@@ -135,7 +135,7 @@ public class GoogleAuthActivity extends AppCompatActivity {
         } else {
             setGoogleSignInButtonText(signInButton, "Sign in with different account");
             continueWithGoogleAccountButton.setVisibility(View.VISIBLE);
-            setGoogleSignInButtonText(continueWithGoogleAccountButton, "Continue with: " + account.getEmail());
+            setGoogleSignInButtonText(continueWithGoogleAccountButton, "Continue as: " + account.getEmail());
         }
     }
 
