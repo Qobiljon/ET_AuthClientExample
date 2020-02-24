@@ -1,4 +1,4 @@
-package inha.nslab.easytrack;
+package inha.nsl.easytrack;
 
 import android.content.Context;
 

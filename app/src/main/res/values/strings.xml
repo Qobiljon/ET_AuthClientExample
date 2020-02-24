@@ -1,11 +1,7 @@
 <resources>
     <string name="app_name">EasyTrack Authenticator</string>
-    
+
     <!--gRPC-->
     <string name="grpc_host">165.246.43.162</string>
     <string name="grpc_port">50051</string>
-
-    <!--Google login-->
-<!--    <string name="server_google_client_id">79296265957-68h74l6ku0vg49ika42a8bt9rcfpsaup.apps.googleusercontent.com</string>-->
-<!--    <string name="server_google_client_secret">dXlVkYNamGd4S639E48JZjQN</string>-->
 </resources>

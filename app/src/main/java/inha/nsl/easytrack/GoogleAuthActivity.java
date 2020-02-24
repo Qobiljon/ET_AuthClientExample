@@ -1,4 +1,4 @@
-package inha.nslab.easytrack;
+package inha.nsl.easytrack;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,7 +26,6 @@ import io.grpc.StatusRuntimeException;
 
 public class GoogleAuthActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN_WITH_GOOGLE = 101;
-    // private static String TAG = "ET_AUTH_EXAMPLE_APP";
     private GoogleSignInClient signInClient;
     private SignInButton signInButton;
     private SignInButton continueWithGoogleAccountButton;
@@ -40,8 +39,9 @@ public class GoogleAuthActivity extends AppCompatActivity {
         continueWithGoogleAccountButton = findViewById(R.id.continueWithGoogleAccountButton);
 
         // Google login client setup
-        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                //.requestIdToken("79296265957-68h74l6ku0vg49ika42a8bt9rcfpsaup.apps.googleusercontent.com")
+        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions
+                .Builder()
+                .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
         signInClient = GoogleSignIn.getClient(this, googleSignInOptions);
@@ -155,26 +155,18 @@ public class GoogleAuthActivity extends AppCompatActivity {
                             ).usePlaintext().build();
 
                             ETServiceGrpc.ETServiceBlockingStub stub = ETServiceGrpc.newBlockingStub(channel);
-                            EtService.DashboardLoginWithEmailRequestMessage requestMessage = EtService.DashboardLoginWithEmailRequestMessage.newBuilder()
-                                    //.setIdToken(account.getIdToken())
-                                    .setDashboardKey("ETd@$#b0@rd")
-                                    .setEmail(account.getEmail())
-                                    .setName(account.getDisplayName())
+                            EtService.LoginWithGoogleIdTokenRequestMessage requestMessage = EtService.LoginWithGoogleIdTokenRequestMessage.newBuilder()
+                                    .setIdToken(account.getIdToken())
                                     .build();
-                            EtService.LoginResponseMessage responseMessage = stub.dashboardLoginWithEmail(requestMessage);
-
-                            try {
-                                channel.shutdown().awaitTermination(1, TimeUnit.SECONDS);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
+                            EtService.LoginResponseMessage responseMessage = stub.loginWithGoogleId(requestMessage);
+                            channel.shutdown();
 
                             if (responseMessage.getDoneSuccessfully())
                                 runOnUiThread(() -> {
                                     Intent result = new Intent("etAuthResult");
                                     result.putExtra("fields", "fullName,email,userId");
-                                    //result.putExtra("fields", "idToken,fullName,email,userId");
-                                    //result.putExtra("idToken", account.getIdToken());
+                                    result.putExtra("fields", "idToken,fullName,email,userId");
+                                    result.putExtra("idToken", account.getIdToken());
                                     result.putExtra("fullName", account.getEmail());
                                     result.putExtra("email", account.getEmail());
                                     result.putExtra("userId", responseMessage.getUserId());

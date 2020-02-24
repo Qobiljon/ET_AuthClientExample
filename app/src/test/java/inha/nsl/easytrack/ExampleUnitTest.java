@@ -1,4 +1,4 @@
-package inha.nslab.easytrack;
+package inha.nsl.easytrack;
 
 import org.junit.Test;
 

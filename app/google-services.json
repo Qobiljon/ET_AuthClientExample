@@ -1,13 +1,48 @@
 {
-  "installed": {
-    "client_id": "79296265957-dmia8p6fiah7rsi2t6v80387s2rm5d0a.apps.googleusercontent.com",
+  "project_info": {
+    "project_number": "79296265957",
+    "firebase_url": "https://etusermanagement.firebaseio.com",
     "project_id": "etusermanagement",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "redirect_uris": [
-      "urn:ietf:wg:oauth:2.0:oob",
-      "http://localhost"
-    ]
-  }
+    "storage_bucket": "etusermanagement.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:79296265957:android:044a28b48aef3beeb59e0c",
+        "android_client_info": {
+          "package_name": "inha.nsl.easytrack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "79296265957-9vceqfdgqqkut5io1kqp4tkiq0gmm78k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "inha.nsl.easytrack",
+            "certificate_hash": "b397b509824f686be8fcdd4cb88a22e9492354e2"
+          }
+        },
+        {
+          "client_id": "79296265957-68h74l6ku0vg49ika42a8bt9rcfpsaup.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2Pzp6Jjta8_myFlV23rjQZnV6wu1AOg8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "79296265957-68h74l6ku0vg49ika42a8bt9rcfpsaup.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
 }
