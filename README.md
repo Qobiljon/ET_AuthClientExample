@@ -1,5 +1,5 @@
 # ET_Authenticator (ET User Management using gRPC and Google ID login)
-<h3>Note: Application is available via  <a href="https://play.google.com/store/apps/details?id=inha.nslab.easytrack">this link on the Google Play Store!</a></ht3>
+<h3>Note: Application is available via  <a href="https://play.google.com/store/apps/details?id=inha.nsl.easytrack">this link on the Google Play Store!</a></ht3>
 
 <h3>Step 1: Ask the user to install the "EasyTrack Authenticator" application</h3>
 
@@ -12,14 +12,14 @@ protected void onCreate(Bundle savedInstanceState) {
   if (authAppIsNotInstalled()) {
     Toast.makeText(this, "Please install the EasyTrack Authenticator, close the app, and reopen your application!", Toast.LENGTH_SHORT).show();
     Intent intent = new Intent(Intent.ACTION_VIEW);
-    intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=inha.nslab.easytrack"));
+    intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=inha.nsl.easytrack"));
     intent.setPackage("com.android.vending");
     startActivity(intent);
   }
 }
 private boolean authAppIsNotInstalled() {
   try {
-    getPackageManager().getPackageInfo("inha.nslab.easytrack", 0);
+    getPackageManager().getPackageInfo("inha.nsl.easytrack", 0);
     return false;
   } catch (PackageManager.NameNotFoundException e) {
     return true;
@@ -30,7 +30,7 @@ private boolean authAppIsNotInstalled() {
 <h3>Step 2: Launch the EasyTrack Authenticator</h3>
 
 ```java
-Intent launchIntent = getPackageManager().getLaunchIntentForPackage("inha.nslab.easytrack");
+Intent launchIntent = getPackageManager().getLaunchIntentForPackage("inha.nsl.easytrack");
 if (launchIntent != null) {
   launchIntent.setFlags(0);
   startActivityForResult(launchIntent, RC_OPEN_ET_AUTH);
