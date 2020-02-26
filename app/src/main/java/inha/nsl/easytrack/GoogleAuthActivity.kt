@@ -12,7 +12,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
-import inha.nsl.easytrack.EtService.DashboardLoginWithEmailRequestMessage
 import inha.nsl.easytrack.EtService.LoginWithGoogleIdTokenRequestMessage
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusRuntimeException

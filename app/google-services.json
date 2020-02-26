@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "79296265957-bj80mbm61c372kv2j0hmgn8fmdocivnk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "inha.nsl.easytrack",
+            "certificate_hash": "82b63aed43dc67817fb47ce43189550aa63bb152"
+          }
+        },
+        {
           "client_id": "79296265957-9vceqfdgqqkut5io1kqp4tkiq0gmm78k.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
