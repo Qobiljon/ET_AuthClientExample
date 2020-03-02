@@ -27,8 +27,9 @@ class GoogleAuthActivity : AppCompatActivity() {
 
         // Google login client setup
         val googleSignInOptions = GoogleSignInOptions.Builder()
-                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestProfile()
                 .requestEmail()
+                .requestIdToken(getString(R.string.default_web_client_id))
                 .build()
         signInClient = GoogleSignIn.getClient(this, googleSignInOptions)
         googleSignInButton.setOnClickListener {
