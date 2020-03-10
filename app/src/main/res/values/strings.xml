@@ -2,6 +2,6 @@
     <string name="app_name">EasyTrack Authenticator</string>
 
     <!--gRPC-->
-    <string name="grpc_host">165.246.42.172</string>
+    <string name="grpc_host">165.246.21.202</string>
     <string name="grpc_port">50051</string>
 </resources>
