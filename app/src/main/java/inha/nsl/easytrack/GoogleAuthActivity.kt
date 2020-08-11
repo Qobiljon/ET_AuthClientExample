@@ -36,7 +36,7 @@ class GoogleAuthActivity : AppCompatActivity() {
             continueWithGoogleAccountButton.visibility = View.GONE
             googleSignInButton.isEnabled = false
             val account = GoogleSignIn.getLastSignedInAccount(this)
-            if (account == null)
+            if (account == null || account.isExpired)
                 startGoogleAuthenticationActivity()
             else {
                 signInClient.signOut().addOnSuccessListener {
@@ -106,7 +106,7 @@ class GoogleAuthActivity : AppCompatActivity() {
             thread.join()
         }
         val account = GoogleSignIn.getLastSignedInAccount(this)
-        if (account == null) {
+        if (account == null || account.isExpired) {
             setGoogleSignInButtonText(googleSignInButton, "Sign in")
             continueWithGoogleAccountButton.visibility = View.GONE
             startGoogleAuthenticationActivity()
