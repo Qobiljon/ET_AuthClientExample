@@ -3,6 +3,7 @@ package inha.nsl.easytrack
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -12,7 +13,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
-import inha.nsl.easytrack.EtService.LoginWithGoogleIdTokenRequestMessage
 import io.grpc.ManagedChannelBuilder
 import io.grpc.StatusRuntimeException
 import kotlinx.android.synthetic.main.activity_google_auth.*
@@ -41,7 +41,7 @@ class GoogleAuthActivity : AppCompatActivity() {
             else {
                 signInClient.signOut().addOnSuccessListener {
                     continueWithGoogleAccountButton.visibility = View.GONE
-                    googleSignInButton.isEnabled = true;
+                    googleSignInButton.isEnabled = true
                     setGoogleSignInButtonText(googleSignInButton, "Sign in")
                     startGoogleAuthenticationActivity()
                 }.addOnFailureListener {
@@ -57,31 +57,26 @@ class GoogleAuthActivity : AppCompatActivity() {
             val account = GoogleSignIn.getLastSignedInAccount(this)!!
             continueWithGoogleAccountButton.isEnabled = false
             googleSignInButton.isEnabled = false
-            Thread(Runnable {
+            val thread = Thread(Runnable {
                 try {
-                    val channel = ManagedChannelBuilder.forAddress(
-                            getString(R.string.grpc_host), getString(R.string.grpc_port).toInt()).usePlaintext().build()
+                    val channel = ManagedChannelBuilder.forAddress(getString(R.string.grpc_host), getString(R.string.grpc_port).toInt()).usePlaintext().build()
                     val stub = ETServiceGrpc.newBlockingStub(channel)
-                    val requestMessage = LoginWithGoogleIdTokenRequestMessage.newBuilder()
-                            .setIdToken(account.getIdToken())
-                            //.setDashboardKey("ETd@$#b0@rd")
-                            //.setEmail(account.email)
-                            //.setName(account.displayName)
-                            .build()
-                    val responseMessage = stub.loginWithGoogleId(requestMessage)
+                    val requestMessage = EtService.LoginWithGoogle.Request.newBuilder().setIdToken(account.idToken).build()
+                    val responseMessage = stub.loginWithGoogle(requestMessage)
                     try {
                         channel.shutdown().awaitTermination(1, TimeUnit.SECONDS)
                     } catch (e: InterruptedException) {
                         e.printStackTrace()
                     }
-                    if (responseMessage.doneSuccessfully) runOnUiThread {
+                    if (responseMessage.success) runOnUiThread {
                         val result = Intent("etAuthResult")
                         //result.putExtra("fields", "fullName,email,userId")
-                        result.putExtra("fields", "idToken,fullName,email,userId");
-                        result.putExtra("idToken", account.getIdToken());
+                        result.putExtra("fields", "idToken,fullName,email,userId")
+                        result.putExtra("idToken", account.idToken)
                         result.putExtra("fullName", account.email)
                         result.putExtra("email", account.email)
                         result.putExtra("userId", responseMessage.userId)
+                        Log.e("EASYTRACK AUTH", "SUCCESS") // todo remove this
                         setResult(Activity.RESULT_OK, result)
                         finish()
                     } else  // technical issue, shouldn't happen
@@ -89,7 +84,8 @@ class GoogleAuthActivity : AppCompatActivity() {
                             signInClient.signOut().addOnCompleteListener {
                                 val result = Intent("etAuthResult")
                                 result.putExtra("fields", "note")
-                                result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.doneSuccessfully, responseMessage.userId))
+                                result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.success, responseMessage.userId))
+                                Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                                 setResult(Activity.RESULT_CANCELED, result)
                                 finish()
                             }
@@ -100,11 +96,14 @@ class GoogleAuthActivity : AppCompatActivity() {
                         result.putExtra("fields", "exception_message,exception_details")
                         result.putExtra("exception_message", e.message)
                         result.putExtra("exception_details", e.toString())
+                        Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                         setResult(Activity.RESULT_CANCELED, result)
                         finish()
                     }
                 }
-            }).start()
+            })
+            thread.start()
+            thread.join()
         }
         val account = GoogleSignIn.getLastSignedInAccount(this)
         if (account == null) {
@@ -129,10 +128,10 @@ class GoogleAuthActivity : AppCompatActivity() {
                         try {
                             val channel = ManagedChannelBuilder.forAddress(getString(R.string.grpc_host), getString(R.string.grpc_port).toInt()).usePlaintext().build()
                             val stub = ETServiceGrpc.newBlockingStub(channel)
-                            val requestMessage = LoginWithGoogleIdTokenRequestMessage.newBuilder().setIdToken(account.idToken).build()
-                            val responseMessage = stub.loginWithGoogleId(requestMessage)
+                            val requestMessage = EtService.LoginWithGoogle.Request.newBuilder().setIdToken(account.idToken).build()
+                            val responseMessage = stub.loginWithGoogle(requestMessage)
                             channel.shutdown()
-                            if (responseMessage.doneSuccessfully) runOnUiThread {
+                            if (responseMessage.success) runOnUiThread {
                                 val result = Intent("etAuthResult")
                                 result.putExtra("fields", "fullName,email,userId")
                                 result.putExtra("fields", "idToken,fullName,email,userId")
@@ -140,6 +139,7 @@ class GoogleAuthActivity : AppCompatActivity() {
                                 result.putExtra("fullName", account.email)
                                 result.putExtra("email", account.email)
                                 result.putExtra("userId", responseMessage.userId)
+                                Log.e("EASYTRACK AUTH", "SUCCESS") // todo remove this
                                 setResult(Activity.RESULT_OK, result)
                                 finish()
                             } else  // technical issue, shouldn't happen
@@ -147,7 +147,8 @@ class GoogleAuthActivity : AppCompatActivity() {
                                     signInClient.signOut().addOnCompleteListener {
                                         val result = Intent("etAuthResult")
                                         result.putExtra("fields", "note")
-                                        result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.doneSuccessfully, responseMessage.userId))
+                                        result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.success, responseMessage.userId))
+                                        Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                                         setResult(Activity.RESULT_CANCELED, result)
                                         finish()
                                     }
@@ -158,6 +159,7 @@ class GoogleAuthActivity : AppCompatActivity() {
                                 result.putExtra("fields", "exception_message,exception_details")
                                 result.putExtra("exception_message", e.message)
                                 result.putExtra("exception_details", e.toString())
+                                Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                                 setResult(Activity.RESULT_CANCELED, result)
                                 finish()
                             }
@@ -166,6 +168,7 @@ class GoogleAuthActivity : AppCompatActivity() {
                 } else {
                     val result = Intent("etAuthResult")
                     result.putExtra("fields", "N/A")
+                    Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                     setResult(Activity.RESULT_FIRST_USER, result)
                     finish()
                 }
@@ -174,6 +177,7 @@ class GoogleAuthActivity : AppCompatActivity() {
                 result.putExtra("fields", "exception_message,exception_details")
                 result.putExtra("exception_message", e.message)
                 result.putExtra("exception_details", e.toString())
+                Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                 setResult(Activity.RESULT_CANCELED, result)
                 finish()
             }
