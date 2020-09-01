@@ -3,7 +3,6 @@ package inha.nsl.easytrack
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -57,7 +56,7 @@ class GoogleAuthActivity : AppCompatActivity() {
             val account = GoogleSignIn.getLastSignedInAccount(this)!!
             continueWithGoogleAccountButton.isEnabled = false
             googleSignInButton.isEnabled = false
-            val thread = Thread(Runnable {
+            val thread = Thread {
                 try {
                     val channel = ManagedChannelBuilder.forAddress(getString(R.string.grpc_host), getString(R.string.grpc_port).toInt()).usePlaintext().build()
                     val stub = ETServiceGrpc.newBlockingStub(channel)
@@ -76,7 +75,6 @@ class GoogleAuthActivity : AppCompatActivity() {
                         result.putExtra("fullName", account.email)
                         result.putExtra("email", account.email)
                         result.putExtra("userId", responseMessage.userId)
-                        Log.e("EASYTRACK AUTH", "SUCCESS") // todo remove this
                         setResult(Activity.RESULT_OK, result)
                         finish()
                     } else  // technical issue, shouldn't happen
@@ -85,7 +83,6 @@ class GoogleAuthActivity : AppCompatActivity() {
                                 val result = Intent("etAuthResult")
                                 result.putExtra("fields", "note")
                                 result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.success, responseMessage.userId))
-                                Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                                 setResult(Activity.RESULT_CANCELED, result)
                                 finish()
                             }
@@ -96,12 +93,11 @@ class GoogleAuthActivity : AppCompatActivity() {
                         result.putExtra("fields", "exception_message,exception_details")
                         result.putExtra("exception_message", e.message)
                         result.putExtra("exception_details", e.toString())
-                        Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                         setResult(Activity.RESULT_CANCELED, result)
                         finish()
                     }
                 }
-            })
+            }
             thread.start()
             thread.join()
         }
@@ -124,7 +120,7 @@ class GoogleAuthActivity : AppCompatActivity() {
             try {
                 val account = task.getResult(ApiException::class.java)
                 if (account != null) {
-                    Thread(Runnable {
+                    Thread {
                         try {
                             val channel = ManagedChannelBuilder.forAddress(getString(R.string.grpc_host), getString(R.string.grpc_port).toInt()).usePlaintext().build()
                             val stub = ETServiceGrpc.newBlockingStub(channel)
@@ -139,7 +135,6 @@ class GoogleAuthActivity : AppCompatActivity() {
                                 result.putExtra("fullName", account.email)
                                 result.putExtra("email", account.email)
                                 result.putExtra("userId", responseMessage.userId)
-                                Log.e("EASYTRACK AUTH", "SUCCESS") // todo remove this
                                 setResult(Activity.RESULT_OK, result)
                                 finish()
                             } else  // technical issue, shouldn't happen
@@ -148,7 +143,6 @@ class GoogleAuthActivity : AppCompatActivity() {
                                         val result = Intent("etAuthResult")
                                         result.putExtra("fields", "note")
                                         result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.success, responseMessage.userId))
-                                        Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                                         setResult(Activity.RESULT_CANCELED, result)
                                         finish()
                                     }
@@ -159,16 +153,14 @@ class GoogleAuthActivity : AppCompatActivity() {
                                 result.putExtra("fields", "exception_message,exception_details")
                                 result.putExtra("exception_message", e.message)
                                 result.putExtra("exception_details", e.toString())
-                                Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                                 setResult(Activity.RESULT_CANCELED, result)
                                 finish()
                             }
                         }
-                    }).start()
+                    }.start()
                 } else {
                     val result = Intent("etAuthResult")
                     result.putExtra("fields", "N/A")
-                    Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                     setResult(Activity.RESULT_FIRST_USER, result)
                     finish()
                 }
@@ -177,7 +169,6 @@ class GoogleAuthActivity : AppCompatActivity() {
                 result.putExtra("fields", "exception_message,exception_details")
                 result.putExtra("exception_message", e.message)
                 result.putExtra("exception_details", e.toString())
-                Log.e("EASYTRACK AUTH", "FAILURE") // todo remove this
                 setResult(Activity.RESULT_CANCELED, result)
                 finish()
             }

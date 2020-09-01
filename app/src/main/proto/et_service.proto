@@ -20,6 +20,7 @@ message LoginDashboard {
   }
   message Response{
     bool success = 1;
+    int32 userId = 2;
   }
 }
 message BindUserToCampaign {
