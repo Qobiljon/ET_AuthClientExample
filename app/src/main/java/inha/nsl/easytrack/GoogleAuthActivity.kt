@@ -72,7 +72,7 @@ class GoogleAuthActivity : AppCompatActivity() {
                         //result.putExtra("fields", "fullName,email,userId")
                         result.putExtra("fields", "idToken,fullName,email,userId")
                         result.putExtra("idToken", account.idToken)
-                        result.putExtra("fullName", account.email)
+                        result.putExtra("fullName", account.displayName)
                         result.putExtra("email", account.email)
                         result.putExtra("userId", responseMessage.userId)
                         setResult(Activity.RESULT_OK, result)
