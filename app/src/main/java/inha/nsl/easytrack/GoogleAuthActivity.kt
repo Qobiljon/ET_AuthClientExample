@@ -22,6 +22,7 @@ class GoogleAuthActivity : AppCompatActivity() {
     private lateinit var signInClient: GoogleSignInClient
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_google_auth)
 
         // Google login client setup
