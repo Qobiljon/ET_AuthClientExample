@@ -29,7 +29,7 @@ class GoogleAuthActivity : AppCompatActivity() {
         val googleSignInOptions = GoogleSignInOptions.Builder()
                 .requestProfile()
                 .requestEmail()
-                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestIdToken("79296265957-bj80mbm61c372kv2j0hmgn8fmdocivnk.apps.googleusercontent.com")
                 .build()
         signInClient = GoogleSignIn.getClient(this, googleSignInOptions)
         googleSignInButton.setOnClickListener {
@@ -71,19 +71,18 @@ class GoogleAuthActivity : AppCompatActivity() {
                     if (responseMessage.success) runOnUiThread {
                         val result = Intent("etAuthResult")
                         //result.putExtra("fields", "fullName,email,userId")
-                        result.putExtra("fields", "idToken,fullName,email,userId")
-                        result.putExtra("idToken", account.idToken)
-                        result.putExtra("fullName", account.displayName)
+                        result.putExtra("resultFieldNames", "name,email,sessionKey")
+                        result.putExtra("name", account.displayName)
                         result.putExtra("email", account.email)
-                        result.putExtra("userId", responseMessage.userId)
+                        result.putExtra("sessionKey", responseMessage.sessionKey)
                         setResult(Activity.RESULT_OK, result)
                         finish()
                     } else  // technical issue, shouldn't happen
                         runOnUiThread {
                             signInClient.signOut().addOnCompleteListener {
                                 val result = Intent("etAuthResult")
-                                result.putExtra("fields", "note")
-                                result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.success, responseMessage.userId))
+                                result.putExtra("resultFieldNames", "note")
+                                result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, sessionKey=%d", responseMessage.success, responseMessage.sessionKey))
                                 setResult(Activity.RESULT_CANCELED, result)
                                 finish()
                             }
@@ -91,7 +90,7 @@ class GoogleAuthActivity : AppCompatActivity() {
                 } catch (e: StatusRuntimeException) {
                     runOnUiThread {
                         val result = Intent("etAuthResult")
-                        result.putExtra("fields", "exception_message,exception_details")
+                        result.putExtra("resultFieldNames", "exception_message,exception_details")
                         result.putExtra("exception_message", e.message)
                         result.putExtra("exception_details", e.toString())
                         setResult(Activity.RESULT_CANCELED, result)
@@ -130,20 +129,18 @@ class GoogleAuthActivity : AppCompatActivity() {
                             channel.shutdown()
                             if (responseMessage.success) runOnUiThread {
                                 val result = Intent("etAuthResult")
-                                result.putExtra("fields", "fullName,email,userId")
-                                result.putExtra("fields", "idToken,fullName,email,userId")
-                                result.putExtra("idToken", account.idToken)
-                                result.putExtra("fullName", account.email)
+                                result.putExtra("resultFieldNames", "name,email,sessionKey")
+                                result.putExtra("name", account.displayName)
                                 result.putExtra("email", account.email)
-                                result.putExtra("userId", responseMessage.userId)
+                                result.putExtra("sessionKey", responseMessage.sessionKey)
                                 setResult(Activity.RESULT_OK, result)
                                 finish()
                             } else  // technical issue, shouldn't happen
                                 runOnUiThread {
                                     signInClient.signOut().addOnCompleteListener {
                                         val result = Intent("etAuthResult")
-                                        result.putExtra("fields", "note")
-                                        result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, userId=%d", responseMessage.success, responseMessage.userId))
+                                        result.putExtra("resultFieldNames", "note")
+                                        result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, sessionKey=%d", responseMessage.success, responseMessage.sessionKey))
                                         setResult(Activity.RESULT_CANCELED, result)
                                         finish()
                                     }
@@ -151,7 +148,7 @@ class GoogleAuthActivity : AppCompatActivity() {
                         } catch (e: StatusRuntimeException) {
                             runOnUiThread {
                                 val result = Intent("etAuthResult")
-                                result.putExtra("fields", "exception_message,exception_details")
+                                result.putExtra("resultFieldNames", "exception_message,exception_details")
                                 result.putExtra("exception_message", e.message)
                                 result.putExtra("exception_details", e.toString())
                                 setResult(Activity.RESULT_CANCELED, result)
@@ -161,13 +158,13 @@ class GoogleAuthActivity : AppCompatActivity() {
                     }.start()
                 } else {
                     val result = Intent("etAuthResult")
-                    result.putExtra("fields", "N/A")
+                    result.putExtra("resultFieldNames", "N/A")
                     setResult(Activity.RESULT_FIRST_USER, result)
                     finish()
                 }
             } catch (e: ApiException) {
                 val result = Intent("etAuthResult")
-                result.putExtra("fields", "exception_message,exception_details")
+                result.putExtra("resultFieldNames", "exception_message,exception_details")
                 result.putExtra("exception_message", e.message)
                 result.putExtra("exception_details", e.toString())
                 setResult(Activity.RESULT_CANCELED, result)
