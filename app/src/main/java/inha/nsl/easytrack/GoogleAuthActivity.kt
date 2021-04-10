@@ -29,7 +29,7 @@ class GoogleAuthActivity : AppCompatActivity() {
         val googleSignInOptions = GoogleSignInOptions.Builder()
                 .requestProfile()
                 .requestEmail()
-                .requestIdToken("79296265957-bj80mbm61c372kv2j0hmgn8fmdocivnk.apps.googleusercontent.com")
+                .requestIdToken(getString(R.string.default_web_client_id))
                 .build()
         signInClient = GoogleSignIn.getClient(this, googleSignInOptions)
         googleSignInButton.setOnClickListener {
@@ -70,10 +70,10 @@ class GoogleAuthActivity : AppCompatActivity() {
                     }
                     if (responseMessage.success) runOnUiThread {
                         val result = Intent("etAuthResult")
-                        //result.putExtra("fields", "fullName,email,userId")
-                        result.putExtra("resultFieldNames", "name,email,sessionKey")
+                        result.putExtra("resultFieldNames", "name,email,userId,sessionKey")
                         result.putExtra("name", account.displayName)
                         result.putExtra("email", account.email)
+                        result.putExtra("userId", responseMessage.userId)
                         result.putExtra("sessionKey", responseMessage.sessionKey)
                         setResult(Activity.RESULT_OK, result)
                         finish()
@@ -129,9 +129,10 @@ class GoogleAuthActivity : AppCompatActivity() {
                             channel.shutdown()
                             if (responseMessage.success) runOnUiThread {
                                 val result = Intent("etAuthResult")
-                                result.putExtra("resultFieldNames", "name,email,sessionKey")
+                                result.putExtra("resultFieldNames", "name,email,userId,sessionKey")
                                 result.putExtra("name", account.displayName)
                                 result.putExtra("email", account.email)
+                                result.putExtra("userId", responseMessage.userId)
                                 result.putExtra("sessionKey", responseMessage.sessionKey)
                                 setResult(Activity.RESULT_OK, result)
                                 finish()
