@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">EasyTrack Authenticator (NSL Server)</string>
-    <string name="grpc_host">165.246.42.173</string>
+    <string name="app_name">EasyTrack Authenticator</string>
+    <string name="grpc_host">49.50.173.144</string>
     <string name="grpc_port">50051</string>
 </resources>
