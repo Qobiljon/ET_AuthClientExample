@@ -42,11 +42,25 @@ android {
     }
 }
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
 protobuf {
-    protoc { artifact = 'com.google.protobuf:protoc:3.5.1-1' }
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.5.1-1'
+        if (Os.isFamily(Os.FAMILY_MAC))
+            artifact += ':osx-x86_64'
+    }
     plugins {
-        javalite { artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0" }
-        grpc { artifact = 'io.grpc:protoc-gen-grpc-java:1.18.0' }
+        javalite {
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
+            if (Os.isFamily(Os.FAMILY_MAC))
+                artifact += ':osx-x86_64'
+        }
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.18.0'
+            if (Os.isFamily(Os.FAMILY_MAC))
+                artifact += ':osx-x86_64'
+        }
     }
     generateProtoTasks {
         all().each { task ->
