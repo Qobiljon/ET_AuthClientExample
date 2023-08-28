@@ -27,10 +27,10 @@ class GoogleAuthActivity : AppCompatActivity() {
 
         // Google login client setup
         val googleSignInOptions = GoogleSignInOptions.Builder()
-                .requestProfile()
-                .requestEmail()
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .build()
+            .requestProfile()
+            .requestEmail()
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .build()
         signInClient = GoogleSignIn.getClient(this, googleSignInOptions)
         googleSignInButton.setOnClickListener {
             continueWithGoogleAccountButton.visibility = View.GONE
@@ -48,7 +48,10 @@ class GoogleAuthActivity : AppCompatActivity() {
                     val acc = GoogleSignIn.getLastSignedInAccount(this)!!
                     continueWithGoogleAccountButton.visibility = View.VISIBLE
                     googleSignInButton.isEnabled = true
-                    setGoogleSignInButtonText(continueWithGoogleAccountButton, "Continue as: " + acc.email)
+                    setGoogleSignInButtonText(
+                        continueWithGoogleAccountButton,
+                        "Continue as: " + acc.email
+                    )
                     setGoogleSignInButtonText(googleSignInButton, "Sign in with different account")
                 }
             }
@@ -59,9 +62,14 @@ class GoogleAuthActivity : AppCompatActivity() {
             googleSignInButton.isEnabled = false
             val thread = Thread {
                 try {
-                    val channel = ManagedChannelBuilder.forAddress(getString(R.string.grpc_host), getString(R.string.grpc_port).toInt()).usePlaintext().build()
+                    val channel = ManagedChannelBuilder.forAddress(
+                        getString(R.string.grpc_host),
+                        getString(R.string.grpc_port).toInt()
+                    ).usePlaintext().build()
                     val stub = ETServiceGrpc.newBlockingStub(channel)
-                    val requestMessage = EtService.LoginWithGoogle.Request.newBuilder().setIdToken(account.idToken).build()
+                    val requestMessage =
+                        EtService.LoginWithGoogle.Request.newBuilder().setIdToken(account.idToken)
+                            .build()
                     val responseMessage = stub.loginWithGoogle(requestMessage)
                     try {
                         channel.shutdown().awaitTermination(1, TimeUnit.SECONDS)
@@ -82,7 +90,15 @@ class GoogleAuthActivity : AppCompatActivity() {
                             signInClient.signOut().addOnCompleteListener {
                                 val result = Intent("etAuthResult")
                                 result.putExtra("resultFieldNames", "note")
-                                result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, sessionKey=%d", responseMessage.success, responseMessage.sessionKey))
+                                result.putExtra(
+                                    "note",
+                                    String.format(
+                                        Locale.getDefault(),
+                                        "please contact the EasyTrack developers with the following details: success=%b, sessionKey=%d",
+                                        responseMessage.success,
+                                        responseMessage.sessionKey
+                                    )
+                                )
                                 setResult(Activity.RESULT_CANCELED, result)
                                 finish()
                             }
@@ -109,7 +125,10 @@ class GoogleAuthActivity : AppCompatActivity() {
         } else {
             setGoogleSignInButtonText(googleSignInButton, "Sign in with different account")
             continueWithGoogleAccountButton.visibility = View.VISIBLE
-            setGoogleSignInButtonText(continueWithGoogleAccountButton, "Continue as: ${account.email}")
+            setGoogleSignInButtonText(
+                continueWithGoogleAccountButton,
+                "Continue as: ${account.email}"
+            )
         }
     }
 
@@ -122,9 +141,13 @@ class GoogleAuthActivity : AppCompatActivity() {
                 if (account != null) {
                     Thread {
                         try {
-                            val channel = ManagedChannelBuilder.forAddress(getString(R.string.grpc_host), getString(R.string.grpc_port).toInt()).usePlaintext().build()
+                            val channel = ManagedChannelBuilder.forAddress(
+                                getString(R.string.grpc_host),
+                                getString(R.string.grpc_port).toInt()
+                            ).usePlaintext().build()
                             val stub = ETServiceGrpc.newBlockingStub(channel)
-                            val requestMessage = EtService.LoginWithGoogle.Request.newBuilder().setIdToken(account.idToken).build()
+                            val requestMessage = EtService.LoginWithGoogle.Request.newBuilder()
+                                .setIdToken(account.idToken).build()
                             val responseMessage = stub.loginWithGoogle(requestMessage)
                             channel.shutdown()
                             if (responseMessage.success) runOnUiThread {
@@ -141,7 +164,15 @@ class GoogleAuthActivity : AppCompatActivity() {
                                     signInClient.signOut().addOnCompleteListener {
                                         val result = Intent("etAuthResult")
                                         result.putExtra("resultFieldNames", "note")
-                                        result.putExtra("note", String.format(Locale.getDefault(), "please contact the EasyTrack developers with the following details: success=%b, sessionKey=%d", responseMessage.success, responseMessage.sessionKey))
+                                        result.putExtra(
+                                            "note",
+                                            String.format(
+                                                Locale.getDefault(),
+                                                "please contact the EasyTrack developers with the following details: success=%b, sessionKey=%d",
+                                                responseMessage.success,
+                                                responseMessage.sessionKey
+                                            )
+                                        )
                                         setResult(Activity.RESULT_CANCELED, result)
                                         finish()
                                     }
@@ -149,7 +180,10 @@ class GoogleAuthActivity : AppCompatActivity() {
                         } catch (e: StatusRuntimeException) {
                             runOnUiThread {
                                 val result = Intent("etAuthResult")
-                                result.putExtra("resultFieldNames", "exception_message,exception_details")
+                                result.putExtra(
+                                    "resultFieldNames",
+                                    "exception_message,exception_details"
+                                )
                                 result.putExtra("exception_message", e.message)
                                 result.putExtra("exception_details", e.toString())
                                 setResult(Activity.RESULT_CANCELED, result)
